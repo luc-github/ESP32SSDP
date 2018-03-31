@@ -242,12 +242,18 @@ void SSDPClass::schema(WiFiClient client){
 }
 
 void SSDPClass::_update(){
+  int nbBytes  =0;
+  char * packetBuffer = NULL;
+ 
   if(!_pending && _server) {
+#ifdef DEBUG_SSDP
+  DEBUG_SSDP.println("Section 1");
+#endif
     ssdp_method_t method = NONE;
 
     _respondToAddr = _server->remoteIP();
     _respondToPort = _server->remotePort();
-
+    nbBytes= _server->parsePacket();
     typedef enum {METHOD, URI, PROTO, KEY, VALUE, ABORT} states;
     states state = METHOD;
 
@@ -258,10 +264,15 @@ void SSDPClass::_update(){
     uint8_t cr = 0;
 
     char buffer[SSDP_BUFFER_SIZE] = {0};
-
-    while(_server->available() > 0){
-      char c = _server->read();
-
+    packetBuffer = new char[nbBytes];
+    int message_size=_server->read(packetBuffer,nbBytes);
+    int process_pos = 0;
+    while(process_pos < message_size){
+#ifdef DEBUG_SSDP
+  DEBUG_SSDP.println(buffer);
+#endif
+      char c = packetBuffer[process_pos];
+     process_pos++;
       (c == '\r' || c == '\n') ? cr++ : cr = 0;
 
       switch(state){
@@ -336,13 +347,23 @@ void SSDPClass::_update(){
       }
     }
   }
-
+      if(packetBuffer) delete packetBuffer;
   if(_pending && (millis() - _process_time) > _delay){
     _pending = false; _delay = 0;
+#ifdef DEBUG_SSDP
+    DEBUG_SSDP.println("Send None");
+#endif
     _send(NONE);
   } else if(_notify_time == 0 || (millis() - _notify_time) > (SSDP_INTERVAL * 1000L)){
     _notify_time = millis();
+    #ifdef DEBUG_SSDP
+    DEBUG_SSDP.println("Send Notify");
+#endif
     _send(NOTIFY);
+  } else {
+#ifdef DEBUG_SSDP
+    DEBUG_SSDP.println("Do not sent");
+#endif
   }
 
   if (_pending) {
