@@ -60,7 +60,6 @@ class SSDPClass{
     ~SSDPClass();
 
     bool begin();
-    void stop();
 
     void schema(WiFiClient client);
 
@@ -95,7 +94,7 @@ class SSDPClass{
     static void _onTimerStatic(SSDPClass* self);
    
      WiFiUDP *_server;
-     esp_timer_handle_t _timer;
+     SSDPTimer* _timer;
     uint16_t _port;
     uint8_t _ttl;
 

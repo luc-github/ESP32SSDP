@@ -106,10 +106,13 @@ static const char _ssdp_schema_template[] PROGMEM =
   "</root>\r\n"
   "\r\n";
 
+struct SSDPTimer {
+  ETSTimer timer;
+};
 
 SSDPClass::SSDPClass() :
 _server(0),
-_timer(0),
+_timer(new SSDPTimer),
 _port(80),
 _ttl(SSDP_MULTICAST_TTL),
 _respondToPort(0),
@@ -132,21 +135,9 @@ _notify_time(0)
 }
 
 SSDPClass::~SSDPClass(){
-  stop();
+  delete _timer;
 }
 
-void SSDPClass::stop(){
-     if (_server) {
-         _server->stop();
-        delete (_server);
-        _server = 0;
-    }
-    if (_timer) {
-    esp_timer_stop(_timer);
-    esp_timer_delete(_timer);
-    _timer = nullptr;
-  }
-}
 
 bool SSDPClass::begin(){
   _pending = false;
@@ -168,15 +159,18 @@ bool SSDPClass::begin(){
 
   _server = new WiFiUDP;
   
-  ip4_addr_t ifaddr;
+ ip4_addr_t ifaddr;
   ifaddr.addr = WiFi.localIP();
   ip4_addr_t multicast_addr;
-  multicast_addr.addr = (uint32_t) SSDP_MULTICAST_ADDR;
+  multicast_addr.addr = IPAddress(SSDP_MULTICAST_ADDR);
   if (igmp_joingroup(&ifaddr, &multicast_addr) != ERR_OK ) {
     return false;
   }
 
-  if (!(_server->begin(SSDP_PORT))) {
+  if (!(_server->beginMulticast(IPAddress(SSDP_MULTICAST_ADDR), SSDP_PORT))) {
+#ifdef DEBUG_SSDP
+    DEBUG_SSDP.println("Error begin");
+#endif
     return false;
   }
 
@@ -219,7 +213,7 @@ void SSDPClass::_send(ssdp_method_t method){
 #endif
   }
 #ifdef DEBUG_SSDP
-  DEBUG_SSDP.print(IPAddress(remoteAddr.addr));
+  DEBUG_SSDP.print(remoteAddr);
   DEBUG_SSDP.print(":");
   DEBUG_SSDP.println(remotePort);
 #endif
@@ -410,21 +404,18 @@ void SSDPClass::setTTL(const uint8_t ttl){
 }
 
 void SSDPClass::_onTimerStatic(SSDPClass* self) {
+#ifdef DEBUG_SSDP
+                DEBUG_SSDP.println("Update");
+#endif
   self->_update();
 }
 
 void SSDPClass::_startTimer() {
-    esp_timer_create_args_t _timerConfig;
-  _timerConfig.arg = reinterpret_cast<void*>(this);
-  _timerConfig.callback = reinterpret_cast<esp_timer_cb_t>(SSDPClass::_onTimerStatic);
-  _timerConfig.dispatch_method = ESP_TIMER_TASK;
-  _timerConfig.name = "SSDP";
-  if (_timer) {
-    esp_timer_stop(_timer);
-    esp_timer_delete(_timer);
-  }
-  esp_timer_create(&_timerConfig, &_timer);
-  esp_timer_start_periodic(_timer, 1000 * 1000);
+  ETSTimer* tm = &(_timer->timer);
+  const int interval = 1000;
+  ets_timer_disarm(tm);
+  ets_timer_setfn(tm, reinterpret_cast<ETSTimerFunc*>(&SSDPClass::_onTimerStatic), reinterpret_cast<void*>(this));
+  ets_timer_arm(tm, interval, 1 /* repeat */);
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SSDP)
