@@ -30,7 +30,6 @@ License (MIT license):
 #include "ESP32SSDP.h"
 #include "WiFiUdp.h"
 #include <lwip/ip_addr.h>
-#include "lwip/igmp.h"
 
 //#define DEBUG_SSDP  Serial
 
@@ -158,14 +157,6 @@ bool SSDPClass::begin(){
   }
 
   _server = new WiFiUDP;
-  
- ip4_addr_t ifaddr;
-  ifaddr.addr = WiFi.localIP();
-  ip4_addr_t multicast_addr;
-  multicast_addr.addr = IPAddress(SSDP_MULTICAST_ADDR);
-  if (igmp_joingroup(&ifaddr, &multicast_addr) != ERR_OK ) {
-    return false;
-  }
 
   if (!(_server->beginMulticast(IPAddress(SSDP_MULTICAST_ADDR), SSDP_PORT))) {
 #ifdef DEBUG_SSDP
@@ -244,19 +235,12 @@ void SSDPClass::schema(WiFiClient client){
 void SSDPClass::_update(){
   int nbBytes  =0;
   char * packetBuffer = NULL;
- 
+  
   if(!_pending && _server) {
-#ifdef DEBUG_SSDP
-  DEBUG_SSDP.println("Section 1");
-#endif
     ssdp_method_t method = NONE;
-
-    _respondToAddr = _server->remoteIP();
-    _respondToPort = _server->remotePort();
     nbBytes= _server->parsePacket();
     typedef enum {METHOD, URI, PROTO, KEY, VALUE, ABORT} states;
     states state = METHOD;
-
     typedef enum {START, MAN, ST, MX} headers;
     headers header = START;
 
@@ -264,17 +248,28 @@ void SSDPClass::_update(){
     uint8_t cr = 0;
 
     char buffer[SSDP_BUFFER_SIZE] = {0};
-    packetBuffer = new char[nbBytes];
+    packetBuffer = new char[nbBytes +1];
     int message_size=_server->read(packetBuffer,nbBytes);
     int process_pos = 0;
-    while(process_pos < message_size){
+    packetBuffer[message_size]='\0';
+    _respondToAddr = _server->remoteIP();
+    _respondToPort = _server->remotePort();
 #ifdef DEBUG_SSDP
-  DEBUG_SSDP.println(buffer);
+        if (message_size) {
+            DEBUG_SSDP.println("****************************************************");
+            DEBUG_SSDP.println(_server->remoteIP());
+            DEBUG_SSDP.println(packetBuffer);
+            DEBUG_SSDP.println("****************************************************");
+        }
 #endif
+    while(process_pos < message_size){
+
       char c = packetBuffer[process_pos];
      process_pos++;
       (c == '\r' || c == '\n') ? cr++ : cr = 0;
-
+#ifdef DEBUG_SSDP
+        if ((c == '\r' || c == '\n') && (cr < 2)) DEBUG_SSDP.println(buffer);
+#endif
       switch(state){
         case METHOD:
           if(c == ' '){
@@ -321,7 +316,10 @@ void SSDPClass::_update(){
                 // if the search type matches our type, we should respond instead of ABORT
                 if(strcasecmp(buffer, _deviceType) == 0){
                   _pending = true;
-                  _process_time = millis();
+                  _process_time = 0;
+#ifdef DEBUG_SSDP
+                  DEBUG_SSDP.println("the search type matches our type");
+#endif
                   state = KEY;
                 }
                 break;
@@ -347,7 +345,7 @@ void SSDPClass::_update(){
       }
     }
   }
-      if(packetBuffer) delete packetBuffer;
+  if(packetBuffer) delete packetBuffer;
   if(_pending && (millis() - _process_time) > _delay){
     _pending = false; _delay = 0;
 #ifdef DEBUG_SSDP
