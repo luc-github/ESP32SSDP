@@ -94,7 +94,7 @@ class SSDPClass{
     void _startTimer();
     void _stopTimer();
     static void _onTimerStatic(SSDPClass* self);
-   
+    IPAddress localIP();
      WiFiUDP *_server;
      SSDPTimer* _timer;
     uint16_t _port;

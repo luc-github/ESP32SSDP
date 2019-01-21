@@ -151,6 +151,19 @@ void SSDPClass::end(){
    _server = 0;
 }
 
+IPAddress SSDPClass::localIP(){
+    tcpip_adapter_ip_info_t ip;
+    if (WiFi.getMode() == WIFI_STA) {
+        if (tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ip)) {
+            return IPAddress();
+        }
+    } else if (WiFi.getMode() == WIFI_OFF) {
+        if (tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_ETH, &ip)) {
+            return IPAddress();
+        }
+    }
+    return IPAddress(ip.ip.addr);
+}
 
 bool SSDPClass::begin(){
   _pending = false;
@@ -182,7 +195,7 @@ bool SSDPClass::begin(){
 
 void SSDPClass::_send(ssdp_method_t method){
   char buffer[1460];
-  IPAddress ip = WiFi.localIP();
+  IPAddress ip = localIP();
 
   char valueBuffer[strlen_P(_ssdp_notify_template)+1];
   strcpy_P(valueBuffer, (method == NONE)?_ssdp_response_template:_ssdp_notify_template);
@@ -224,7 +237,7 @@ void SSDPClass::_send(ssdp_method_t method){
 }
 
 void SSDPClass::schema(WiFiClient client){
-  IPAddress ip = WiFi.localIP();
+  IPAddress ip = localIP();
   char buffer[strlen_P(_ssdp_schema_template)+1];
   strcpy_P(buffer, _ssdp_schema_template);
   client.printf(buffer,
