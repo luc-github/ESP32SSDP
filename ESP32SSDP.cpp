@@ -264,8 +264,8 @@ void SSDPClass::_update(){
     nbBytes= _server->parsePacket();
     typedef enum {METHOD, URI, PROTO, KEY, VALUE, ABORT} states;
     states state = METHOD;
-    typedef enum {START, MAN, ST, MX} headers;
-    headers header = START;
+    typedef enum {STRIP, START, SKIP, MAN, ST, MX} headers;
+    headers header = STRIP;
 
     uint8_t cursor = 0;
     uint8_t cr = 0;
@@ -316,8 +316,8 @@ void SSDPClass::_update(){
           break;
         case KEY:
           if(cr == 4){ _pending = true; _process_time = millis(); }
-          else if(c == ' '){ cursor = 0; state = VALUE; }
-          else if(c != '\r' && c != '\n' && c != ':' && cursor < SSDP_BUFFER_SIZE - 1){ buffer[cursor++] = c; buffer[cursor] = '\0'; }
+          else if(c == ':'){ cursor = 0; state = VALUE; }
+          else if(c != '\r' && c != '\n' && c != ' ' && cursor < SSDP_BUFFER_SIZE - 1){ buffer[cursor++] = c; buffer[cursor] = '\0'; }
           break;
         case VALUE:
           if(cr == 2){
@@ -351,12 +351,14 @@ void SSDPClass::_update(){
                 break;
             }
 
-            if(state != ABORT){ state = KEY; header = START; cursor = 0; }
+            if(state != ABORT){ state = KEY; header = STRIP; cursor = 0; }
           } else if(c != '\r' && c != '\n'){
+            if(header == STRIP) { if(c == ' '){ break; } else { header = START; }}
             if(header == START){
               if(strncmp(buffer, "MA", 2) == 0) header = MAN;
               else if(strcmp(buffer, "ST") == 0) header = ST;
               else if(strcmp(buffer, "MX") == 0) header = MX;
+              else header = SKIP;
             }
 
             if(cursor < SSDP_BUFFER_SIZE - 1){ buffer[cursor++] = c; buffer[cursor] = '\0'; }
