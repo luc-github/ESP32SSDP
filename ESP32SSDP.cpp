@@ -347,7 +347,8 @@ void SSDPClass::_update(){
                 }
                 break;
               case MX:
-                _delay = random(0, atoi(buffer)) * 1000L;
+                // delay in ms from 0 to MX*1000 where MX is in seconds
+                _delay = random(0, atoi(buffer) * 1000L);
                 break;
             }
 
