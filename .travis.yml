@@ -32,7 +32,7 @@ before_script:
   - git clone -b 2.1 https://github.com/luc-github/esp3d.git esp3d
   - cp -f ESP32SSDP.cpp $TRAVIS_BUILD_DIR/esp3d/libraries/ESP32SSDP
   - cp -f ESP32SSDP.h $TRAVIS_BUILD_DIR/esp3d/libraries/ESP32SSDP
-  - cp -r $TRAVIS_BUILD_DIR/esp3d/libraries/arduinoWebSockets $HOME/arduino_ide/libraries/
+  - cp -r $TRAVIS_BUILD_DIR/esp3d/libraries/ESP32SSDP $HOME/arduino_ide/libraries/
   - cp -r $TRAVIS_BUILD_DIR/esp3d/libraries/arduinoWebSockets $HOME/arduino_ide/libraries/
     
 script:
