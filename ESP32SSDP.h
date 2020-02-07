@@ -102,6 +102,7 @@ class SSDPClass{
 
     IPAddress _respondToAddr;
     uint16_t  _respondToPort;
+    char _respondType[SSDP_DEVICE_TYPE_SIZE];
 
     bool _pending;
     unsigned short _delay;

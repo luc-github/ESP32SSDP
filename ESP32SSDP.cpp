@@ -207,7 +207,7 @@ void SSDPClass::_send(ssdp_method_t method){
     _modelName, _modelNumber,
     _uuid,
     (method == NONE)?"ST":"NT",
-    _deviceType,
+    _respondType,
    ip[0], ip[1], ip[2], ip[3], _port, _schemaURL
   );
   if(len < 0) return;
@@ -330,6 +330,8 @@ void SSDPClass::_update(){
 #endif
                 break;
               case ST:
+                // save the search term for the reply
+                strlcpy(_respondType, buffer, sizeof(_respondType));
                 if(strcmp(buffer, "ssdp:all")){
                   state = ABORT;
 #ifdef DEBUG_SSDP
