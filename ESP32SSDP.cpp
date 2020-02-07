@@ -223,7 +223,7 @@ void SSDPClass::_send(ssdp_method_t method){
     remoteAddr = IPAddress(SSDP_MULTICAST_ADDR);
     remotePort = SSDP_PORT;
 #ifdef DEBUG_SSDP
-    DEBUG_SSDP.println("Sending Notify to ");
+    DEBUG_SSDP.print("Sending Notify to ");
 #endif
   }
 #ifdef DEBUG_SSDP
@@ -280,7 +280,9 @@ void SSDPClass::_update(){
 #ifdef DEBUG_SSDP
         if (message_size) {
             DEBUG_SSDP.println("****************************************************");
-            DEBUG_SSDP.println(_server->remoteIP());
+            DEBUG_SSDP.print(_server->remoteIP());
+            DEBUG_SSDP.print(":");
+            DEBUG_SSDP.println(_server->remotePort());
             DEBUG_SSDP.println(packetBuffer);
             DEBUG_SSDP.println("****************************************************");
         }
