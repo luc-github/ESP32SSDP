@@ -111,6 +111,7 @@ class SSDPClass{
 
     char _schemaURL[SSDP_SCHEMA_URL_SIZE];
     char _uuid[SSDP_UUID_SIZE];
+    char _usn_suffix[SSDP_DEVICE_TYPE_SIZE];
     char _deviceType[SSDP_DEVICE_TYPE_SIZE];
     char _friendlyName[SSDP_FRIENDLY_NAME_SIZE];
     char _serialNumber[SSDP_SERIAL_NUMBER_SIZE];

@@ -56,7 +56,7 @@ static const char _ssdp_packet_template[] PROGMEM =
   "%s" // _ssdp_response_template / _ssdp_notify_template
   "CACHE-CONTROL: max-age=%u\r\n" // SSDP_INTERVAL
   "SERVER: Arduino/1.0 UPNP/1.1 %s/%s\r\n" // _modelName, _modelNumber
-  "USN: uuid:%s\r\n" // _uuid
+  "USN: uuid:%s%s\r\n" // _uuid, _usn_suffix
   "%s: %s\r\n"  // "NT" or "ST", _deviceType
   "LOCATION: http://%u.%u.%u.%u:%u/%s\r\n" // WiFi.localIP(), _port, _schemaURL
   "\r\n";
@@ -121,6 +121,7 @@ _process_time(0),
 _notify_time(0)
 {
   _uuid[0] = '\0';
+  _usn_suffix[0] = '\0';
   _modelNumber[0] = '\0';
   sprintf(_deviceType, "urn:schemas-upnp-org:device:Basic:1");
   _friendlyName[0] = '\0';
@@ -205,7 +206,7 @@ void SSDPClass::_send(ssdp_method_t method){
     valueBuffer,
     SSDP_INTERVAL,
     _modelName, _modelNumber,
-    _uuid,
+    _uuid, _usn_suffix,
     (method == NONE)?"ST":"NT",
     _respondType,
    ip[0], ip[1], ip[2], ip[3], _port, _schemaURL
@@ -233,6 +234,11 @@ void SSDPClass::_send(ssdp_method_t method){
 #endif
   _server->beginPacket(remoteAddr, remotePort);
   _server->println(buffer);
+  #ifdef DEBUG_SSDP
+      DEBUG_SSDP.println("*************************TX*************************");
+      DEBUG_SSDP.println(buffer);
+      DEBUG_SSDP.println("****************************************************");
+  #endif
  _server->endPacket();
 }
 
@@ -279,7 +285,7 @@ void SSDPClass::_update(){
     _respondToPort = _server->remotePort();
 #ifdef DEBUG_SSDP
         if (message_size) {
-            DEBUG_SSDP.println("****************************************************");
+            DEBUG_SSDP.println("*************************RX*************************");
             DEBUG_SSDP.print(_server->remoteIP());
             DEBUG_SSDP.print(":");
             DEBUG_SSDP.println(_server->remotePort());
@@ -332,22 +338,39 @@ void SSDPClass::_update(){
 #endif
                 break;
               case ST:
-                // save the search term for the reply
+                // save the search term for the reply and clear usn suffix.
                 strlcpy(_respondType, buffer, sizeof(_respondType));
-                if(strcmp(buffer, "ssdp:all")){
-                  state = ABORT;
+                _usn_suffix[0] = '\0';
 #ifdef DEBUG_SSDP
-                  DEBUG_SSDP.printf("REJECT: %s\n", (char *)buffer);
+                DEBUG_SSDP.printf("ST: '%s'\n",buffer);
 #endif
-                }
+                // if looking for all or root reply with upnp:rootdevice
+                if(int _all = strcmp(buffer, "ssdp:all")==0 || strcmp(buffer, "upnp:rootdevice")==0){
+                  _pending = true;
+                  _process_time = 0;
+                  // set USN suffix
+                  strlcpy(_usn_suffix, "::upnp:rootdevice", sizeof(_usn_suffix));
+#ifdef DEBUG_SSDP
+                  DEBUG_SSDP.println("the search type matches all and root");
+#endif
+                  state = KEY;
+                } else
                 // if the search type matches our type, we should respond instead of ABORT
                 if(strcasecmp(buffer, _deviceType) == 0){
                   _pending = true;
                   _process_time = 0;
+                  // set USN suffix to the device type
+                  strlcpy(_usn_suffix, "::", sizeof(_usn_suffix));
+                  strlcat(_usn_suffix, _deviceType, sizeof(_usn_suffix));
 #ifdef DEBUG_SSDP
                   DEBUG_SSDP.println("the search type matches our type");
 #endif
                   state = KEY;
+                } else {
+                  state = ABORT;
+#ifdef DEBUG_SSDP
+                  DEBUG_SSDP.println("REJECT. The search type does not match our type");
+#endif
                 }
                 break;
               case MX:
