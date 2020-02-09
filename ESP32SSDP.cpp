@@ -326,7 +326,7 @@ void SSDPClass::_update(){
           break;
         case KEY:
           // end of HTTP request parsing. If we find a match start reply delay.
-          if(cr == 4){if (_stmatch) { _pending = true; _process_time = millis(); DEBUG_SSDP.println("END HTTP"); } }
+          if(cr == 4){if (_stmatch) { _pending = true; _process_time = millis(); }}
           else if(c == ':'){ cursor = 0; state = VALUE; }
           else if(c != '\r' && c != '\n' && c != ' ' && cursor < SSDP_BUFFER_SIZE - 1){ buffer[cursor++] = c; buffer[cursor] = '\0'; }
           break;
