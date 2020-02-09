@@ -334,6 +334,7 @@ void SSDPClass::_update(){
           if(cr == 2){
             switch(header){
               case START:
+              case STRIP:
                 break;
               case MAN:
 #ifdef DEBUG_SSDP
@@ -348,7 +349,7 @@ void SSDPClass::_update(){
                 DEBUG_SSDP.printf("ST: '%s'\n",buffer);
 #endif
                 // if looking for all or root reply with upnp:rootdevice
-                if(int _all = strcmp(buffer, "ssdp:all")==0 || strcmp(buffer, "upnp:rootdevice")==0){
+                if(strcmp(buffer, "ssdp:all")==0 || strcmp(buffer, "upnp:rootdevice")==0){
                   _stmatch = true;
                   // set USN suffix
                   strlcpy(_usn_suffix, "::upnp:rootdevice", sizeof(_usn_suffix));
