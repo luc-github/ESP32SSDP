@@ -335,6 +335,7 @@ void SSDPClass::_update(){
             switch(header){
               case START:
               case STRIP:
+              case SKIP:
                 break;
               case MAN:
 #ifdef DEBUG_SSDP
