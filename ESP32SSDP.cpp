@@ -116,6 +116,7 @@ _port(80),
 _ttl(SSDP_MULTICAST_TTL),
 _respondToPort(0),
 _pending(false),
+_stmatch(false),
 _delay(0),
 _process_time(0),
 _notify_time(0)
@@ -168,6 +169,7 @@ IPAddress SSDPClass::localIP(){
 
 bool SSDPClass::begin(){
   _pending = false;
+  _stmatch = false;
   end();
   uint32_t chipId = ((uint16_t) (ESP.getEfuseMac() >> 32));
   sprintf(_uuid, "38323636-4558-4dda-9188-cda0e6%02x%02x%02x",
@@ -323,7 +325,8 @@ void SSDPClass::_update(){
           if(cr == 2){ state = KEY; cursor = 0; }
           break;
         case KEY:
-          if(cr == 4){ _pending = true; _process_time = millis(); }
+          // end of HTTP request parsing. If we find a match start reply delay.
+          if(cr == 4){if (_stmatch) { _pending = true; _process_time = millis(); DEBUG_SSDP.println("END HTTP"); } }
           else if(c == ':'){ cursor = 0; state = VALUE; }
           else if(c != '\r' && c != '\n' && c != ' ' && cursor < SSDP_BUFFER_SIZE - 1){ buffer[cursor++] = c; buffer[cursor] = '\0'; }
           break;
@@ -346,8 +349,7 @@ void SSDPClass::_update(){
 #endif
                 // if looking for all or root reply with upnp:rootdevice
                 if(int _all = strcmp(buffer, "ssdp:all")==0 || strcmp(buffer, "upnp:rootdevice")==0){
-                  _pending = true;
-                  _process_time = 0;
+                  _stmatch = true;
                   // set USN suffix
                   strlcpy(_usn_suffix, "::upnp:rootdevice", sizeof(_usn_suffix));
 #ifdef DEBUG_SSDP
@@ -357,8 +359,7 @@ void SSDPClass::_update(){
                 } else
                 // if the search type matches our type, we should respond instead of ABORT
                 if(strcasecmp(buffer, _deviceType) == 0){
-                  _pending = true;
-                  _process_time = 0;
+                  _stmatch = true;
                   // set USN suffix to the device type
                   strlcpy(_usn_suffix, "::", sizeof(_usn_suffix));
                   strlcat(_usn_suffix, _deviceType, sizeof(_usn_suffix));

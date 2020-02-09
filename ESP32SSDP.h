@@ -105,6 +105,7 @@ class SSDPClass{
     char _respondType[SSDP_DEVICE_TYPE_SIZE];
 
     bool _pending;
+    bool _stmatch;
     unsigned short _delay;
     unsigned long _process_time;
     unsigned long _notify_time;
