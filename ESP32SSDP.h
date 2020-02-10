@@ -113,7 +113,6 @@ class SSDPClass{
     ssdp_reply_slot_item_t *_replySlots[SSDP_MAX_REPLY_SLOTS];
     IPAddress _respondToAddr;
     uint16_t  _respondToPort;
-    char _respondType[SSDP_DEVICE_TYPE_SIZE];
 
     bool _pending;
     bool _stmatch;
@@ -121,6 +120,7 @@ class SSDPClass{
     unsigned long _process_time;
     unsigned long _notify_time;
 
+    char _respondType[SSDP_DEVICE_TYPE_SIZE];
     char _schemaURL[SSDP_SCHEMA_URL_SIZE];
     char _uuid[SSDP_UUID_SIZE];
     char _usn_suffix[SSDP_DEVICE_TYPE_SIZE];

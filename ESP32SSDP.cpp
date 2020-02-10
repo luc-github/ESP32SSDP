@@ -114,12 +114,13 @@ _server(0),
 _timer(0),
 _port(80),
 _ttl(SSDP_MULTICAST_TTL),
+_replySlots({NULL}),
+_respondToAddr(0,0,0,0),
 _respondToPort(0),
 _pending(false),
 _stmatch(false),
 _delay(0),
 _process_time(0),
-_replySlots({NULL}),
 _notify_time(0)
 {
   _uuid[0] = '\0';
