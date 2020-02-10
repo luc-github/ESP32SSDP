@@ -102,14 +102,17 @@ class SSDPClass{
 
     IPAddress _respondToAddr;
     uint16_t  _respondToPort;
+    char _respondType[SSDP_DEVICE_TYPE_SIZE];
 
     bool _pending;
+    bool _stmatch;
     unsigned short _delay;
     unsigned long _process_time;
     unsigned long _notify_time;
 
     char _schemaURL[SSDP_SCHEMA_URL_SIZE];
     char _uuid[SSDP_UUID_SIZE];
+    char _usn_suffix[SSDP_DEVICE_TYPE_SIZE];
     char _deviceType[SSDP_DEVICE_TYPE_SIZE];
     char _friendlyName[SSDP_FRIENDLY_NAME_SIZE];
     char _serialNumber[SSDP_SERIAL_NUMBER_SIZE];

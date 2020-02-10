@@ -56,7 +56,7 @@ static const char _ssdp_packet_template[] PROGMEM =
   "%s" // _ssdp_response_template / _ssdp_notify_template
   "CACHE-CONTROL: max-age=%u\r\n" // SSDP_INTERVAL
   "SERVER: Arduino/1.0 UPNP/1.1 %s/%s\r\n" // _modelName, _modelNumber
-  "USN: uuid:%s\r\n" // _uuid
+  "USN: uuid:%s%s\r\n" // _uuid, _usn_suffix
   "%s: %s\r\n"  // "NT" or "ST", _deviceType
   "LOCATION: http://%u.%u.%u.%u:%u/%s\r\n" // WiFi.localIP(), _port, _schemaURL
   "\r\n";
@@ -116,11 +116,13 @@ _port(80),
 _ttl(SSDP_MULTICAST_TTL),
 _respondToPort(0),
 _pending(false),
+_stmatch(false),
 _delay(0),
 _process_time(0),
 _notify_time(0)
 {
   _uuid[0] = '\0';
+  _usn_suffix[0] = '\0';
   _modelNumber[0] = '\0';
   sprintf(_deviceType, "urn:schemas-upnp-org:device:Basic:1");
   _friendlyName[0] = '\0';
@@ -167,6 +169,7 @@ IPAddress SSDPClass::localIP(){
 
 bool SSDPClass::begin(){
   _pending = false;
+  _stmatch = false;
   end();
   uint32_t chipId = ((uint16_t) (ESP.getEfuseMac() >> 32));
   sprintf(_uuid, "38323636-4558-4dda-9188-cda0e6%02x%02x%02x",
@@ -205,9 +208,9 @@ void SSDPClass::_send(ssdp_method_t method){
     valueBuffer,
     SSDP_INTERVAL,
     _modelName, _modelNumber,
-    _uuid,
+    _uuid, _usn_suffix,
     (method == NONE)?"ST":"NT",
-    _deviceType,
+    _respondType,
    ip[0], ip[1], ip[2], ip[3], _port, _schemaURL
   );
   if(len < 0) return;
@@ -223,7 +226,7 @@ void SSDPClass::_send(ssdp_method_t method){
     remoteAddr = IPAddress(SSDP_MULTICAST_ADDR);
     remotePort = SSDP_PORT;
 #ifdef DEBUG_SSDP
-    DEBUG_SSDP.println("Sending Notify to ");
+    DEBUG_SSDP.print("Sending Notify to ");
 #endif
   }
 #ifdef DEBUG_SSDP
@@ -233,6 +236,11 @@ void SSDPClass::_send(ssdp_method_t method){
 #endif
   _server->beginPacket(remoteAddr, remotePort);
   _server->println(buffer);
+  #ifdef DEBUG_SSDP
+      DEBUG_SSDP.println("*************************TX*************************");
+      DEBUG_SSDP.println(buffer);
+      DEBUG_SSDP.println("****************************************************");
+  #endif
  _server->endPacket();
 }
 
@@ -264,8 +272,8 @@ void SSDPClass::_update(){
     nbBytes= _server->parsePacket();
     typedef enum {METHOD, URI, PROTO, KEY, VALUE, ABORT} states;
     states state = METHOD;
-    typedef enum {START, MAN, ST, MX} headers;
-    headers header = START;
+    typedef enum {STRIP, START, SKIP, MAN, ST, MX} headers;
+    headers header = STRIP;
 
     uint8_t cursor = 0;
     uint8_t cr = 0;
@@ -279,8 +287,10 @@ void SSDPClass::_update(){
     _respondToPort = _server->remotePort();
 #ifdef DEBUG_SSDP
         if (message_size) {
-            DEBUG_SSDP.println("****************************************************");
-            DEBUG_SSDP.println(_server->remoteIP());
+            DEBUG_SSDP.println("*************************RX*************************");
+            DEBUG_SSDP.print(_server->remoteIP());
+            DEBUG_SSDP.print(":");
+            DEBUG_SSDP.println(_server->remotePort());
             DEBUG_SSDP.println(packetBuffer);
             DEBUG_SSDP.println("****************************************************");
         }
@@ -315,14 +325,17 @@ void SSDPClass::_update(){
           if(cr == 2){ state = KEY; cursor = 0; }
           break;
         case KEY:
-          if(cr == 4){ _pending = true; _process_time = millis(); }
-          else if(c == ' '){ cursor = 0; state = VALUE; }
-          else if(c != '\r' && c != '\n' && c != ':' && cursor < SSDP_BUFFER_SIZE - 1){ buffer[cursor++] = c; buffer[cursor] = '\0'; }
+          // end of HTTP request parsing. If we find a match start reply delay.
+          if(cr == 4){if (_stmatch) { _pending = true; _process_time = millis(); }}
+          else if(c == ':'){ cursor = 0; state = VALUE; }
+          else if(c != '\r' && c != '\n' && c != ' ' && cursor < SSDP_BUFFER_SIZE - 1){ buffer[cursor++] = c; buffer[cursor] = '\0'; }
           break;
         case VALUE:
           if(cr == 2){
             switch(header){
               case START:
+              case STRIP:
+              case SKIP:
                 break;
               case MAN:
 #ifdef DEBUG_SSDP
@@ -330,33 +343,53 @@ void SSDPClass::_update(){
 #endif
                 break;
               case ST:
-                if(strcmp(buffer, "ssdp:all")){
-                  state = ABORT;
+                // save the search term for the reply and clear usn suffix.
+                strlcpy(_respondType, buffer, sizeof(_respondType));
+                _usn_suffix[0] = '\0';
 #ifdef DEBUG_SSDP
-                  DEBUG_SSDP.printf("REJECT: %s\n", (char *)buffer);
+                DEBUG_SSDP.printf("ST: '%s'\n",buffer);
 #endif
-                }
+                // if looking for all or root reply with upnp:rootdevice
+                if(strcmp(buffer, "ssdp:all")==0 || strcmp(buffer, "upnp:rootdevice")==0){
+                  _stmatch = true;
+                  // set USN suffix
+                  strlcpy(_usn_suffix, "::upnp:rootdevice", sizeof(_usn_suffix));
+#ifdef DEBUG_SSDP
+                  DEBUG_SSDP.println("the search type matches all and root");
+#endif
+                  state = KEY;
+                } else
                 // if the search type matches our type, we should respond instead of ABORT
                 if(strcasecmp(buffer, _deviceType) == 0){
-                  _pending = true;
-                  _process_time = 0;
+                  _stmatch = true;
+                  // set USN suffix to the device type
+                  strlcpy(_usn_suffix, "::", sizeof(_usn_suffix));
+                  strlcat(_usn_suffix, _deviceType, sizeof(_usn_suffix));
 #ifdef DEBUG_SSDP
                   DEBUG_SSDP.println("the search type matches our type");
 #endif
                   state = KEY;
+                } else {
+                  state = ABORT;
+#ifdef DEBUG_SSDP
+                  DEBUG_SSDP.println("REJECT. The search type does not match our type");
+#endif
                 }
                 break;
               case MX:
-                _delay = random(0, atoi(buffer)) * 1000L;
+                // delay in ms from 0 to MX*1000 where MX is in seconds
+                _delay = random(0, atoi(buffer) * 1000L);
                 break;
             }
 
-            if(state != ABORT){ state = KEY; header = START; cursor = 0; }
+            if(state != ABORT){ state = KEY; header = STRIP; cursor = 0; }
           } else if(c != '\r' && c != '\n'){
+            if(header == STRIP) { if(c == ' '){ break; } else { header = START; }}
             if(header == START){
               if(strncmp(buffer, "MA", 2) == 0) header = MAN;
               else if(strcmp(buffer, "ST") == 0) header = ST;
               else if(strcmp(buffer, "MX") == 0) header = MX;
+              else header = SKIP;
             }
 
             if(cursor < SSDP_BUFFER_SIZE - 1){ buffer[cursor++] = c; buffer[cursor] = '\0'; }
