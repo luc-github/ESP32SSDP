@@ -114,6 +114,8 @@ _server(0),
 _timer(0),
 _port(80),
 _ttl(SSDP_MULTICAST_TTL),
+_replySlots{NULL},
+_respondToAddr{0,0,0,0},
 _respondToPort(0),
 _pending(false),
 _stmatch(false),
@@ -123,6 +125,7 @@ _notify_time(0)
 {
   _uuid[0] = '\0';
   _usn_suffix[0] = '\0';
+  _respondType[0] = '\0';
   _modelNumber[0] = '\0';
   sprintf(_deviceType, "urn:schemas-upnp-org:device:Basic:1");
   _friendlyName[0] = '\0';
@@ -266,7 +269,7 @@ void SSDPClass::schema(WiFiClient client){
 void SSDPClass::_update(){
   int nbBytes  =0;
   char * packetBuffer = nullptr;
-  
+
   if(!_pending && _server) {
     ssdp_method_t method = NONE;
     nbBytes= _server->parsePacket();
@@ -377,8 +380,9 @@ void SSDPClass::_update(){
                 }
                 break;
               case MX:
-                // delay in ms from 0 to MX*1000 where MX is in seconds
-                _delay = random(0, atoi(buffer) * 1000L);
+                // delay in ms from 0 to MX*1000 where MX is in seconds with limits.
+                _delay = (short)random(0, atoi(buffer) * 1000L);
+                if (_delay > SSDP_MAX_DELAY) _delay = SSDP_MAX_DELAY;
                 break;
             }
 
@@ -402,28 +406,92 @@ void SSDPClass::_update(){
     }
   }
   if(packetBuffer) delete packetBuffer;
-  if(_pending && (millis() - _process_time) > _delay){
-    _pending = false; _delay = 0;
+  // save reply in reply queue if one is pending
+  if(_pending) {
+    int i;
+    // Many UPNP hosts send out mulitple M-SEARCH packets at the same time to mitigate
+    // packet loss. Just reply to one for a given host:port.
+    for (i = 0; i < SSDP_MAX_REPLY_SLOTS; i++) {
+      if (_replySlots[i]) {
+        if (_replySlots[i]->_respondToPort == _respondToPort &&
+          _replySlots[i]->_respondToAddr == _respondToAddr
+        ) {
 #ifdef DEBUG_SSDP
-    DEBUG_SSDP.println("Send None");
+            DEBUG_SSDP.printf("Remove dupe SSDP reply in slot %i.\n", i);
 #endif
-    _send(NONE);
-  } else if(_notify_time == 0 || (millis() - _notify_time) > (SSDP_INTERVAL * 1000L)){
+            delete _replySlots[i];
+            _replySlots[i] = 0;
+        }
+      }
+    }
+    // save packet to available reply queue slot
+    for (i = 0; i < SSDP_MAX_REPLY_SLOTS; i++) {
+      if (!_replySlots[i]) {
+#ifdef DEBUG_SSDP
+        DEBUG_SSDP.printf("Saving deferred SSDP reply to queue slot %i.\n", i);
+#endif
+        _replySlots[i] = new ssdp_reply_slot_item_t;
+        _replySlots[i]->_process_time = _process_time;
+        _replySlots[i]->_delay = _delay;
+        _replySlots[i]->_respondToAddr = _respondToAddr;
+        _replySlots[i]->_respondToPort = _respondToPort;
+        strlcpy(_replySlots[i]->_respondType, _respondType, sizeof(_replySlots[i]->_respondType));
+        strlcpy(_replySlots[i]->_usn_suffix, _usn_suffix, sizeof(_replySlots[i]->_usn_suffix));
+        break;
+      }
+    }
+#ifdef DEBUG_SSDP
+    if (i == SSDP_MAX_REPLY_SLOTS) {
+      DEBUG_SSDP.println("SSDP reply queue is full dropping packet.");
+    }
+#endif
+    _pending = false; _delay = 0;
+  }
+  // send any packets that are pending and overdue.
+  unsigned long t = millis();
+  bool sent = false;
+  for (int i = 0; i < SSDP_MAX_REPLY_SLOTS; i++) {
+    if (_replySlots[i]) {
+      // millis delay with overflow protection.
+      if (t - _replySlots[i]->_process_time > _replySlots[i]->_delay) {
+        // reply ready. restore and send.
+        _respondToAddr = _replySlots[i]->_respondToAddr;
+        _respondToPort = _replySlots[i]->_respondToPort;
+        strlcpy(_respondType, _replySlots[i]->_respondType, sizeof(_respondType));
+        strlcpy(_usn_suffix, _replySlots[i]->_usn_suffix, sizeof(_usn_suffix));
+#ifdef DEBUG_SSDP
+        DEBUG_SSDP.println("Send None");
+#endif
+        _send(NONE);
+        sent = true;
+        delete _replySlots[i];
+        _replySlots[i] = 0;
+      }
+    }
+  }
+#ifdef DEBUG_SSDP
+  uint8_t rcount = 0;
+  DEBUG_SSDP.print("SSDP reply queue status: [");
+  for (int i = 0; i < SSDP_MAX_REPLY_SLOTS; i++) {
+    DEBUG_SSDP.print(_replySlots[i] ? "X" : "-" );
+  }
+  DEBUG_SSDP.println("]");
+#endif
+  if(_notify_time == 0 || (millis() - _notify_time) > (SSDP_INTERVAL * 1000L)){
     _notify_time = millis();
-    #ifdef DEBUG_SSDP
+#ifdef DEBUG_SSDP
     DEBUG_SSDP.println("Send Notify");
 #endif
     _send(NOTIFY);
-  } else {
+    sent = true;
+  }
+  if (!sent) {
 #ifdef DEBUG_SSDP
     DEBUG_SSDP.println("Do not sent");
 #endif
+  } else {
+    _server->flush();
   }
-
-  if (_pending) {
-      _server->flush();
-  }
-
 }
 
 void SSDPClass::setSchemaURL(const char *url){

@@ -44,6 +44,8 @@ License (MIT license):
 #define SSDP_MODEL_VERSION_SIZE     32
 #define SSDP_MANUFACTURER_SIZE      64
 #define SSDP_MANUFACTURER_URL_SIZE  128
+#define SSDP_MAX_REPLY_SLOTS        5
+#define SSDP_MAX_DELAY              10000
 
 typedef enum {
   NONE,
@@ -51,6 +53,14 @@ typedef enum {
   NOTIFY
 } ssdp_method_t;
 
+typedef struct {
+  unsigned long _process_time;
+  short _delay;
+  IPAddress _respondToAddr;
+  uint16_t _respondToPort;
+  char _respondType[SSDP_DEVICE_TYPE_SIZE];
+  char _usn_suffix[SSDP_DEVICE_TYPE_SIZE];
+} ssdp_reply_slot_item_t;
 
 struct SSDPTimer;
 
@@ -100,16 +110,17 @@ class SSDPClass{
     uint16_t _port;
     uint8_t _ttl;
 
+    ssdp_reply_slot_item_t *_replySlots[SSDP_MAX_REPLY_SLOTS];
     IPAddress _respondToAddr;
     uint16_t  _respondToPort;
-    char _respondType[SSDP_DEVICE_TYPE_SIZE];
 
     bool _pending;
     bool _stmatch;
-    unsigned short _delay;
+    short _delay;
     unsigned long _process_time;
     unsigned long _notify_time;
 
+    char _respondType[SSDP_DEVICE_TYPE_SIZE];
     char _schemaURL[SSDP_SCHEMA_URL_SIZE];
     char _uuid[SSDP_UUID_SIZE];
     char _usn_suffix[SSDP_DEVICE_TYPE_SIZE];
