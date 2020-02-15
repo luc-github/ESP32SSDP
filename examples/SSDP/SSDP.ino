@@ -25,18 +25,46 @@ void setup() {
     });
     HTTP.begin();
 
-    Serial.printf("Starting SSDP...\n");
+    //set schema xml url, nees to match http handler
+    //"ssdp/schema.xml" if not set
     SSDP.setSchemaURL("description.xml");
+    //set port
+    //80 if not set
     SSDP.setHTTPPort(80);
+    //set device name
+    //Null string if not set
     SSDP.setName("Philips hue clone");
+    //set Serial Number
+    //Null string if not set
     SSDP.setSerialNumber("001788102201");
+    //set device url
+    //Null string if not set
     SSDP.setURL("index.html");
+    //set model name
+    //Null string if not set
     SSDP.setModelName("Philips hue bridge 2012");
+    //set model description
+    //Null string if not set
+    SSDP.setModelDescription("This device can be controled by WiFi".);
+    //set model number
+    //Null string if not set
     SSDP.setModelNumber("929000226503");
+    //set model url
+    //Null string if not set
     SSDP.setModelURL("http://www.meethue.com");
+    //set model manufacturer name
+    //Null string if not set
     SSDP.setManufacturer("Royal Philips Electronics");
+    //set model manufacturer url
+    //Null string if not set
     SSDP.setManufacturerURL("http://www.philips.com");
+    //set device type
+    //"urn:schemas-upnp-org:device:Basic:1" if not set
     SSDP.setDeviceType("upnp:rootdevice"); //to appear as root device
+    //set server name
+    //"Arduino/1.0" if not set
+    SSDP.setServerName("SSDPServer/1.0"); 
+    Serial.printf("Starting SSDP...\n");
     SSDP.begin();
 
     Serial.printf("Ready!\n");
