@@ -42,6 +42,7 @@ script:
   - build_sketch  $TRAVIS_BUILD_DIR/examples/SSDP/SSDP.ino
   - rm -fr $HOME/arduino_ide
   - rm -fr $HOME/.arduino15
+  - cp  $TRAVIS_BUILD_DIR/platformio.ini $TRAVIS_BUILD_DIR/examples/SSDP/
   - cd $TRAVIS_BUILD_DIR/examples/SSDP/
   - platformio run
   
