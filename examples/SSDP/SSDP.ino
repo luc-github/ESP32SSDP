@@ -45,7 +45,7 @@ void setup() {
     SSDP.setModelName("Philips hue bridge 2012");
     //set model description
     //Null string if not set
-    SSDP.setModelDescription("This device can be controled by WiFi".);
+    SSDP.setModelDescription("This device can be controled by WiFi");
     //set model number
     //Null string if not set
     SSDP.setModelNumber("929000226503");
