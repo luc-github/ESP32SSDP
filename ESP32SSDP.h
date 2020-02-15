@@ -90,6 +90,10 @@ class SSDPClass{
     void setModelNumber(const String& num) { setModelNumber(num.c_str()); }
     void setModelNumber(const char *num);
     void setModelURL(const String& url) { setModelURL(url.c_str()); }
+    void setModelDescription(const String& desc) { setModelDescription(desc.c_str()); }
+    void setModelDescription(const char *desc);
+    void setServerName(const String& name) { setServerName(name.c_str()); }
+    void setServerName(const char *name);
     void setModelURL(const char *url);
     void setManufacturer(const String& name) { setManufacturer(name.c_str()); }
     void setManufacturer(const char *name);
@@ -133,6 +137,8 @@ class SSDPClass{
     char _modelName[SSDP_MODEL_NAME_SIZE];
     char _modelURL[SSDP_MODEL_URL_SIZE];
     char _modelNumber[SSDP_MODEL_VERSION_SIZE];
+    String _modelDescription;
+    String _servername;
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SSDP)

@@ -55,7 +55,7 @@ static const char _ssdp_notify_template[] PROGMEM =
 static const char _ssdp_packet_template[] PROGMEM =
   "%s" // _ssdp_response_template / _ssdp_notify_template
   "CACHE-CONTROL: max-age=%u\r\n" // SSDP_INTERVAL
-  "SERVER: Arduino/1.0 UPNP/1.1 %s/%s\r\n" // _modelName, _modelNumber
+  "SERVER: %s UPNP/1.1 %s/%s\r\n" // _servername, _modelName, _modelNumber
   "USN: uuid:%s%s\r\n" // _uuid, _usn_suffix
   "%s: %s\r\n"  // "NT" or "ST", _deviceType
   "LOCATION: http://%u.%u.%u.%u:%u/%s\r\n" // WiFi.localIP(), _port, _schemaURL
@@ -135,6 +135,7 @@ _notify_time(0)
   _modelURL[0] = '\0';
   _manufacturer[0] = '\0';
   _manufacturerURL[0] = '\0';
+  _servername = "Arduino/1.0";
   sprintf(_schemaURL, "ssdp/schema.xml");
 }
 
@@ -210,6 +211,7 @@ void SSDPClass::_send(ssdp_method_t method){
     _ssdp_packet_template,
     valueBuffer,
     SSDP_INTERVAL,
+    _servername.c_str(),
     _modelName, _modelNumber,
     _uuid, _usn_suffix,
     (method == NONE)?"ST":"NT",
@@ -527,6 +529,13 @@ void SSDPClass::setSerialNumber(const uint32_t serialNumber){
 
 void SSDPClass::setModelName(const char *name){
   strlcpy(_modelName, name, sizeof(_modelName));
+}
+
+void SSDPClass::setModelDescription(const char *desc){
+    _modelDescription = desc;
+}
+void SSDPClass::setServerName(const char *name){
+    _servername = name;
 }
 
 void SSDPClass::setModelNumber(const char *num){
