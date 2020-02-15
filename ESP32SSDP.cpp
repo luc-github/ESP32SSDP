@@ -80,6 +80,7 @@ static const char _ssdp_schema_template[] PROGMEM =
       "<presentationURL>%s</presentationURL>"
       "<serialNumber>%s</serialNumber>"
       "<modelName>%s</modelName>"
+      "<modelDescription>%s</modelDescription>"
       "<modelNumber>%s</modelNumber>"
       "<modelURL>%s</modelURL>"
       "<manufacturer>%s</manufacturer>"
@@ -251,7 +252,7 @@ void SSDPClass::_send(ssdp_method_t method){
 
 void SSDPClass::schema(WiFiClient client){
   IPAddress ip = localIP();
-  char buffer[strlen_P(_ssdp_schema_template)+1];
+  char buffer[1460];
   strcpy_P(buffer, _ssdp_schema_template);
   client.printf(buffer,
     ip[0], ip[1], ip[2], ip[3], _port,
@@ -260,6 +261,7 @@ void SSDPClass::schema(WiFiClient client){
     _presentationURL,
     _serialNumber,
     _modelName,
+    _modelDescription,
     _modelNumber,
     _modelURL,
     _manufacturer,
