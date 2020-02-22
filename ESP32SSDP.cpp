@@ -31,7 +31,7 @@ License (MIT license):
 #include "WiFiUdp.h"
 #include <lwip/ip_addr.h>
 
-//#define DEBUG_SSDP  Serial
+#define DEBUG_SSDP  Serial
 
 #define SSDP_INTERVAL     1200
 #define SSDP_PORT         1900
@@ -261,7 +261,7 @@ void SSDPClass::schema(WiFiClient client){
     _presentationURL,
     _serialNumber,
     _modelName,
-    _modelDescription,
+    _modelDescription.c_str(),
     _modelNumber,
     _modelURL,
     _manufacturer,
