@@ -31,7 +31,7 @@ License (MIT license):
 #include "WiFiUdp.h"
 #include <lwip/ip_addr.h>
 
-//#define DEBUG_SSDP  Serial
+#define DEBUG_SSDP  Serial
 
 #define SSDP_INTERVAL     1200
 #define SSDP_PORT         1900
@@ -416,6 +416,9 @@ void SSDPClass::_update(){
         if (_replySlots[i]->_respondToPort == _respondToPort &&
           _replySlots[i]->_respondToAddr == _respondToAddr
         ) {
+          // keep original delay
+          _delay = _replySlots[i]->_delay;
+          _process_time = _replySlots[i]->_process_time;
 #ifdef DEBUG_SSDP
             DEBUG_SSDP.printf("Remove dupe SSDP reply in slot %i.\n", i);
 #endif
