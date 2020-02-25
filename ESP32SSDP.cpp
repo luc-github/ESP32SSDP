@@ -54,7 +54,7 @@ static const char _ssdp_notify_template[] PROGMEM =
 
 static const char _ssdp_packet_template[] PROGMEM =
   "%s" // _ssdp_response_template / _ssdp_notify_template
-  "CACHE-CONTROL: max-age=%u\r\n" // SSDP_INTERVAL
+  "CACHE-CONTROL: max-age=%u\r\n" // _interval
   "SERVER: %s UPNP/1.1 %s/%s\r\n" // _servername, _modelName, _modelNumber
   "USN: uuid:%s%s\r\n" // _uuid, _usn_suffix
   "%s: %s\r\n"  // "NT" or "ST", _deviceType
@@ -115,6 +115,7 @@ _server(0),
 _timer(0),
 _port(80),
 _ttl(SSDP_MULTICAST_TTL),
+_interval(SSDP_INTERVAL),
 _replySlots{NULL},
 _respondToAddr{0,0,0,0},
 _respondToPort(0),
@@ -211,7 +212,7 @@ void SSDPClass::_send(ssdp_method_t method){
   int len = snprintf_P(buffer, sizeof(buffer),
     _ssdp_packet_template,
     valueBuffer,
-    SSDP_INTERVAL,
+    _interval,
     _servername.c_str(),
     _modelName, _modelNumber,
     _uuid, _usn_suffix,
@@ -481,7 +482,7 @@ void SSDPClass::_update(){
   }
   DEBUG_SSDP.println("]");
 #endif
-  if(_notify_time == 0 || (millis() - _notify_time) > (SSDP_INTERVAL * 1000L)){
+  if(_notify_time == 0 || (millis() - _notify_time) > (_interval * 1000L)){
     _notify_time = millis();
     // send notify with our root device type
     strlcpy(_respondType, "upnp:rootdevice", sizeof(_respondType));
@@ -558,6 +559,10 @@ void SSDPClass::setManufacturerURL(const char *url){
 
 void SSDPClass::setTTL(const uint8_t ttl){
   _ttl = ttl;
+}
+
+void SSDPClass::setInterval(uint8_t interval) {
+  _interval = interval;
 }
 
 void SSDPClass::_onTimerStatic(SSDPClass* self) {

@@ -101,6 +101,7 @@ class SSDPClass{
     void setManufacturerURL(const char *url);
     void setHTTPPort(uint16_t port);
     void setTTL(uint8_t ttl);
+    void setInterval(uint8_t interval);
 
   protected:
     void _send(ssdp_method_t method);
@@ -113,6 +114,7 @@ class SSDPClass{
      SSDPTimer* _timer;
     uint16_t _port;
     uint8_t _ttl;
+    uint8_t _interval;
 
     ssdp_reply_slot_item_t *_replySlots[SSDP_MAX_REPLY_SLOTS];
     IPAddress _respondToAddr;
