@@ -482,6 +482,9 @@ void SSDPClass::_update(){
 #endif
   if(_notify_time == 0 || (millis() - _notify_time) > (SSDP_INTERVAL * 1000L)){
     _notify_time = millis();
+    // send notify with our root device type
+    strlcpy(_respondType, "upnp:rootdevice", sizeof(_respondType));
+    strlcpy(_usn_suffix, "::upnp:rootdevice", sizeof(_usn_suffix));
 #ifdef DEBUG_SSDP
     DEBUG_SSDP.println("Send Notify");
 #endif
