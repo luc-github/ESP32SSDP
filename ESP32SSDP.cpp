@@ -303,9 +303,6 @@ void SSDPClass::_update(){
       char c = packetBuffer[process_pos];
      process_pos++;
       (c == '\r' || c == '\n') ? cr++ : cr = 0;
-#ifdef DEBUG_SSDP
-        if ((c == '\r' || c == '\n') && (cr < 2)) DEBUG_SSDP.println(buffer);
-#endif
       switch(state){
         case METHOD:
           if(c == ' '){
