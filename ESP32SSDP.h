@@ -73,6 +73,7 @@ class SSDPClass{
     void end();
 
     void schema(WiFiClient client);
+    const char * schema();
 
     void setDeviceType(const String& deviceType) { setDeviceType(deviceType.c_str()); }
     void setDeviceType(const char *deviceType);
@@ -90,6 +91,10 @@ class SSDPClass{
     void setModelNumber(const String& num) { setModelNumber(num.c_str()); }
     void setModelNumber(const char *num);
     void setModelURL(const String& url) { setModelURL(url.c_str()); }
+    void setModelDescription(const String& desc) { setModelDescription(desc.c_str()); }
+    void setModelDescription(const char *desc);
+    void setServerName(const String& name) { setServerName(name.c_str()); }
+    void setServerName(const char *name);
     void setModelURL(const char *url);
     void setManufacturer(const String& name) { setManufacturer(name.c_str()); }
     void setManufacturer(const char *name);
@@ -97,6 +102,10 @@ class SSDPClass{
     void setManufacturerURL(const char *url);
     void setHTTPPort(uint16_t port);
     void setTTL(uint8_t ttl);
+    void setInterval(uint32_t interval);
+    void setUUID(const char * uuid, bool rootonly = true);
+    void setservices(const char * services){_services = services;}
+    void seticons(const char * icons){_icons = icons;}
 
   protected:
     void _send(ssdp_method_t method);
@@ -109,6 +118,7 @@ class SSDPClass{
      SSDPTimer* _timer;
     uint16_t _port;
     uint8_t _ttl;
+    uint8_t _interval;
 
     ssdp_reply_slot_item_t *_replySlots[SSDP_MAX_REPLY_SLOTS];
     IPAddress _respondToAddr;
@@ -133,6 +143,11 @@ class SSDPClass{
     char _modelName[SSDP_MODEL_NAME_SIZE];
     char _modelURL[SSDP_MODEL_URL_SIZE];
     char _modelNumber[SSDP_MODEL_VERSION_SIZE];
+    String _modelDescription;
+    String _servername;
+    char * _schema;
+    String _services;
+    String _icons;
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SSDP)
