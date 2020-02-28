@@ -303,9 +303,6 @@ void SSDPClass::_update(){
       char c = packetBuffer[process_pos];
      process_pos++;
       (c == '\r' || c == '\n') ? cr++ : cr = 0;
-#ifdef DEBUG_SSDP
-        if ((c == '\r' || c == '\n') && (cr < 2)) DEBUG_SSDP.println(buffer);
-#endif
       switch(state){
         case METHOD:
           if(c == ' '){
@@ -416,6 +413,9 @@ void SSDPClass::_update(){
         if (_replySlots[i]->_respondToPort == _respondToPort &&
           _replySlots[i]->_respondToAddr == _respondToAddr
         ) {
+          // keep original delay
+          _delay = _replySlots[i]->_delay;
+          _process_time = _replySlots[i]->_process_time;
 #ifdef DEBUG_SSDP
             DEBUG_SSDP.printf("Remove dupe SSDP reply in slot %i.\n", i);
 #endif
@@ -479,6 +479,9 @@ void SSDPClass::_update(){
 #endif
   if(_notify_time == 0 || (millis() - _notify_time) > (SSDP_INTERVAL * 1000L)){
     _notify_time = millis();
+    // send notify with our root device type
+    strlcpy(_respondType, "upnp:rootdevice", sizeof(_respondType));
+    strlcpy(_usn_suffix, "::upnp:rootdevice", sizeof(_usn_suffix));
 #ifdef DEBUG_SSDP
     DEBUG_SSDP.println("Send Notify");
 #endif
