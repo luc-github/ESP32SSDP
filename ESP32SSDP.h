@@ -73,6 +73,7 @@ class SSDPClass{
     void end();
 
     void schema(WiFiClient client);
+    const char * schema();
 
     void setDeviceType(const String& deviceType) { setDeviceType(deviceType.c_str()); }
     void setDeviceType(const char *deviceType);
@@ -101,7 +102,10 @@ class SSDPClass{
     void setManufacturerURL(const char *url);
     void setHTTPPort(uint16_t port);
     void setTTL(uint8_t ttl);
-    void setInterval(uint8_t interval);
+    void setInterval(uint32_t interval);
+    void setUUID(const char * uuid, bool rootonly = true);
+    void setservices(const char * services){_services = services;}
+    void seticons(const char * icons){_icons = icons;}
 
   protected:
     void _send(ssdp_method_t method);
@@ -141,6 +145,9 @@ class SSDPClass{
     char _modelNumber[SSDP_MODEL_VERSION_SIZE];
     String _modelDescription;
     String _servername;
+    char * _schema;
+    String _services;
+    String _icons;
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SSDP)

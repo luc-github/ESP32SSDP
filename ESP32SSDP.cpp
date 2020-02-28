@@ -31,7 +31,7 @@ License (MIT license):
 #include "WiFiUdp.h"
 #include <lwip/ip_addr.h>
 
-#define DEBUG_SSDP  Serial
+//#define DEBUG_SSDP  Serial
 
 #define SSDP_INTERVAL     1200
 #define SSDP_PORT         1900
@@ -40,7 +40,7 @@ License (MIT license):
 #define SSDP_BUFFER_SIZE  64
 #define SSDP_MULTICAST_TTL 2
 static const IPAddress SSDP_MULTICAST_ADDR(239, 255, 255, 250);
-
+#define SSDP_UUID_ROOT "38323636-4558-4dda-9188-cda0e6"
 
 
 static const char _ssdp_response_template[] PROGMEM =
@@ -86,23 +86,9 @@ static const char _ssdp_schema_template[] PROGMEM =
       "<manufacturer>%s</manufacturer>"
       "<manufacturerURL>%s</manufacturerURL>"
       "<UDN>uuid:%s</UDN>"
+    "<serviceList>%s</serviceList>"
     "</device>"
-//    "<iconList>"
-//      "<icon>"
-//        "<mimetype>image/png</mimetype>"
-//        "<height>48</height>"
-//        "<width>48</width>"
-//        "<depth>24</depth>"
-//        "<url>icon48.png</url>"
-//      "</icon>"
-//      "<icon>"
-//       "<mimetype>image/png</mimetype>"
-//       "<height>120</height>"
-//       "<width>120</width>"
-//       "<depth>24</depth>"
-//       "<url>icon120.png</url>"
-//      "</icon>"
-//    "</iconList>"
+    "<iconList>%s</iconList>"
   "</root>\r\n"
   "\r\n";
 
@@ -139,6 +125,7 @@ _notify_time(0)
   _manufacturerURL[0] = '\0';
   _servername = "Arduino/1.0";
   sprintf(_schemaURL, "ssdp/schema.xml");
+  _schema = nullptr;
 }
 
 SSDPClass::~SSDPClass(){
@@ -146,6 +133,10 @@ SSDPClass::~SSDPClass(){
 }
 
 void SSDPClass::end(){
+	if (_schema){
+		free(_schema);
+		_schema = nullptr;
+	}
     if(!_server) {
         return;
     }
@@ -173,22 +164,31 @@ IPAddress SSDPClass::localIP(){
     return IPAddress(ip.ip.addr);
 }
 
+void SSDPClass::setUUID(const char *uuid, bool rootonly){
+	//no sanity check is done - TBD
+	if (rootonly) {
+		uint32_t chipId = ((uint16_t) (ESP.getEfuseMac() >> 32));
+		sprintf(_uuid, "%s%02x%02x%02x",
+		uuid,
+		(uint16_t) ((chipId >> 16) & 0xff),
+		(uint16_t) ((chipId >>  8) & 0xff),
+		(uint16_t)   chipId        & 0xff  );
+	} else {
+		strlcpy(_uuid, uuid,sizeof(_uuid));
+	}
+}
+
 bool SSDPClass::begin(){
   _pending = false;
   _stmatch = false;
   end();
-  uint32_t chipId = ((uint16_t) (ESP.getEfuseMac() >> 32));
-  sprintf(_uuid, "38323636-4558-4dda-9188-cda0e6%02x%02x%02x",
-    (uint16_t) ((chipId >> 16) & 0xff),
-    (uint16_t) ((chipId >>  8) & 0xff),
-    (uint16_t)   chipId        & 0xff  );
-  assert(nullptr == _server);
-  _server = new WiFiUDP;
+  if (strlen(_uuid) == 0){
+	  setUUID(SSDP_UUID_ROOT);
+  }
 #ifdef DEBUG_SSDP
   DEBUG_SSDP.printf("SSDP UUID: %s\n", (char *)_uuid);
 #endif
-
-
+  assert(nullptr == _server);
   _server = new WiFiUDP;
   if (!(_server->beginMulticast(IPAddress(SSDP_MULTICAST_ADDR), SSDP_PORT))) {
 #ifdef DEBUG_SSDP
@@ -251,24 +251,55 @@ void SSDPClass::_send(ssdp_method_t method){
  _server->endPacket();
 }
 
+const char * SSDPClass::schema(){
+	uint len = strlen(_ssdp_schema_template) 
+					+ 21 //(IP = 15) + 1 (:) + 5 (port)
+					+ SSDP_DEVICE_TYPE_SIZE 
+					+ SSDP_FRIENDLY_NAME_SIZE 
+					+ SSDP_SCHEMA_URL_SIZE 
+					+ SSDP_SERIAL_NUMBER_SIZE 
+					+ SSDP_MODEL_NAME_SIZE
+					+ _modelDescription.length()
+					+ SSDP_MODEL_VERSION_SIZE
+					+ SSDP_MODEL_URL_SIZE
+					+ SSDP_MANUFACTURER_SIZE
+					+ SSDP_MANUFACTURER_URL_SIZE
+					+ SSDP_UUID_SIZE 
+					+ _services.length()
+					+ _icons.length();
+	if (_schema){
+		free (_schema);
+		_schema = nullptr;
+	}		
+	_schema = (char *)malloc(len+1);
+	if (_schema) {
+		IPAddress ip = localIP();
+		sprintf(_schema, _ssdp_schema_template,
+		ip[0], ip[1], ip[2], ip[3], _port,
+		_deviceType,
+		_friendlyName,
+		_presentationURL,
+		_serialNumber,
+		_modelName,
+		_modelDescription.c_str(),
+		_modelNumber,
+		_modelURL,
+		_manufacturer,
+		_manufacturerURL,
+		_uuid,
+		_services.c_str(),
+		_icons.c_str()
+	  );
+  } else {
+  #ifdef DEBUG_SSDP
+      DEBUG_SSDP.println("not enough memory for schema");
+  #endif
+  }
+  return _schema;
+}
+
 void SSDPClass::schema(WiFiClient client){
-  IPAddress ip = localIP();
-  char buffer[1460];
-  strcpy_P(buffer, _ssdp_schema_template);
-  client.printf(buffer,
-    ip[0], ip[1], ip[2], ip[3], _port,
-    _deviceType,
-    _friendlyName,
-    _presentationURL,
-    _serialNumber,
-    _modelName,
-    _modelDescription.c_str(),
-    _modelNumber,
-    _modelURL,
-    _manufacturer,
-    _manufacturerURL,
-    _uuid
-  );
+  client.print(schema());
 }
 
 void SSDPClass::_update(){
@@ -561,7 +592,7 @@ void SSDPClass::setTTL(const uint8_t ttl){
   _ttl = ttl;
 }
 
-void SSDPClass::setInterval(uint8_t interval) {
+void SSDPClass::setInterval(uint32_t interval) {
   _interval = interval;
 }
 
