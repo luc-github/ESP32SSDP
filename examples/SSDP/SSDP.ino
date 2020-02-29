@@ -69,21 +69,21 @@ void setup() {
     //use SSDP.setUUID("daa26fa3-d2d4-4072-bc7a-a1b88ab4234a", false); for full UUID
     SSDP.setUUID("daa26fa3-d2d4-4072-bc7a");
     //Set icons list, NB: optional, this is ignored under windows
-    SSDP.seticons(	"<icon>"
-					"<mimetype>image/png</mimetype>"
-					"<height>48</height>"
-					"<width>48</width>"
-					"<depth>24</depth>"
-					"<url>icon48.png</url>"
-					"</icon>");
+    SSDP.seticons(  "<icon>"
+                    "<mimetype>image/png</mimetype>"
+                    "<height>48</height>"
+                    "<width>48</width>"
+                    "<depth>24</depth>"
+                    "<url>icon48.png</url>"
+                    "</icon>");
     //Set service list, NB: optional for simple device             
-     SSDP.setservices(	"<service>"
-						"<serviceType>urn:schemas-upnp-org:service:SwitchPower:1</serviceType>"
-						"<serviceId>urn:upnp-org:serviceId:SwitchPower:1</serviceId>"
-						"<SCPDURL>/SwitchPower1.xml</SCPDURL>"
-						"<controlURL>/SwitchPower/Control</controlURL>"
-						"<eventSubURL>/SwitchPower/Event</eventSubURL>"
-						"</service>");
+     SSDP.setservices(  "<service>"
+                        "<serviceType>urn:schemas-upnp-org:service:SwitchPower:1</serviceType>"
+                        "<serviceId>urn:upnp-org:serviceId:SwitchPower:1</serviceId>"
+                        "<SCPDURL>/SwitchPower1.xml</SCPDURL>"
+                        "<controlURL>/SwitchPower/Control</controlURL>"
+                        "<eventSubURL>/SwitchPower/Event</eventSubURL>"
+                        "</service>");
 
     Serial.printf("Starting SSDP...\n");
     SSDP.begin();
