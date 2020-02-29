@@ -252,25 +252,25 @@ void SSDPClass::_send(ssdp_method_t method){
 }
 
 const char * SSDPClass::schema(){
-    uint len = strlen(_ssdp_schema_template) 
+    uint len = strlen(_ssdp_schema_template)
                     + 21 //(IP = 15) + 1 (:) + 5 (port)
-                    + SSDP_DEVICE_TYPE_SIZE 
-                    + SSDP_FRIENDLY_NAME_SIZE 
-                    + SSDP_SCHEMA_URL_SIZE 
-                    + SSDP_SERIAL_NUMBER_SIZE 
+                    + SSDP_DEVICE_TYPE_SIZE
+                    + SSDP_FRIENDLY_NAME_SIZE
+                    + SSDP_SCHEMA_URL_SIZE
+                    + SSDP_SERIAL_NUMBER_SIZE
                     + SSDP_MODEL_NAME_SIZE
                     + _modelDescription.length()
                     + SSDP_MODEL_VERSION_SIZE
                     + SSDP_MODEL_URL_SIZE
                     + SSDP_MANUFACTURER_SIZE
                     + SSDP_MANUFACTURER_URL_SIZE
-                    + SSDP_UUID_SIZE 
+                    + SSDP_UUID_SIZE
                     + _services.length()
                     + _icons.length();
     if (_schema){
         free (_schema);
         _schema = nullptr;
-    }       
+    }
     _schema = (char *)malloc(len+1);
     if (_schema) {
         IPAddress ip = localIP();

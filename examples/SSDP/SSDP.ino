@@ -63,7 +63,7 @@ void setup() {
     SSDP.setDeviceType("upnp:rootdevice"); //to appear as root device
     //set server name
     //"Arduino/1.0" if not set
-    SSDP.setServerName("SSDPServer/1.0"); 
+    SSDP.setServerName("SSDPServer/1.0");
     //set UUID, you can use https://www.uuidgenerator.net/
     //use 38323636-4558-4dda-9188-cda0e6 + 4 last bytes of mac address if not set
     //use SSDP.setUUID("daa26fa3-d2d4-4072-bc7a-a1b88ab4234a", false); for full UUID
@@ -76,7 +76,7 @@ void setup() {
                     "<depth>24</depth>"
                     "<url>icon48.png</url>"
                     "</icon>");
-    //Set service list, NB: optional for simple device             
+    //Set service list, NB: optional for simple device
      SSDP.setServices(  "<service>"
                         "<serviceType>urn:schemas-upnp-org:service:SwitchPower:1</serviceType>"
                         "<serviceId>urn:upnp-org:serviceId:SwitchPower:1</serviceId>"
