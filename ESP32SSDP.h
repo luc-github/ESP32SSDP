@@ -104,8 +104,8 @@ class SSDPClass{
     void setTTL(uint8_t ttl);
     void setInterval(uint32_t interval);
     void setUUID(const char * uuid, bool rootonly = true);
-    void setservices(const char * services){_services = services;}
-    void seticons(const char * icons){_icons = icons;}
+    void setServices(const char * services){_services = services;}
+    void setIcons(const char * icons){_icons = icons;}
 
   protected:
     void _send(ssdp_method_t method);
