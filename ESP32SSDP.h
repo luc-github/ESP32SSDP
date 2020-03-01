@@ -48,24 +48,25 @@ License (MIT license):
 #define SSDP_MAX_DELAY              10000
 
 typedef enum {
-  NONE,
-  SEARCH,
-  NOTIFY
+    NONE,
+    SEARCH,
+    NOTIFY
 } ssdp_method_t;
 
 typedef struct {
-  unsigned long _process_time;
-  short _delay;
-  IPAddress _respondToAddr;
-  uint16_t _respondToPort;
-  char _respondType[SSDP_DEVICE_TYPE_SIZE];
-  char _usn_suffix[SSDP_DEVICE_TYPE_SIZE];
+    unsigned long _process_time;
+    short _delay;
+    IPAddress _respondToAddr;
+    uint16_t _respondToPort;
+    char _respondType[SSDP_DEVICE_TYPE_SIZE];
+    char _usn_suffix[SSDP_DEVICE_TYPE_SIZE];
 } ssdp_reply_slot_item_t;
 
 struct SSDPTimer;
 
-class SSDPClass{
-  public:
+class SSDPClass
+{
+public:
     SSDPClass();
     ~SSDPClass();
 
@@ -75,47 +76,89 @@ class SSDPClass{
     void schema(WiFiClient client);
     const char * schema();
 
-    void setDeviceType(const String& deviceType) { setDeviceType(deviceType.c_str()); }
+    void setDeviceType(const String& deviceType)
+    {
+        setDeviceType(deviceType.c_str());
+    }
     void setDeviceType(const char *deviceType);
-    void setName(const String& name) { setName(name.c_str()); }
+    void setName(const String& name)
+    {
+        setName(name.c_str());
+    }
     void setName(const char *name);
-    void setURL(const String& url) { setURL(url.c_str()); }
+    void setURL(const String& url)
+    {
+        setURL(url.c_str());
+    }
     void setURL(const char *url);
-    void setSchemaURL(const String& url) { setSchemaURL(url.c_str()); }
+    void setSchemaURL(const String& url)
+    {
+        setSchemaURL(url.c_str());
+    }
     void setSchemaURL(const char *url);
-    void setSerialNumber(const String& serialNumber) { setSerialNumber(serialNumber.c_str()); }
+    void setSerialNumber(const String& serialNumber)
+    {
+        setSerialNumber(serialNumber.c_str());
+    }
     void setSerialNumber(const char *serialNumber);
     void setSerialNumber(const uint32_t serialNumber);
-    void setModelName(const String& name) { setModelName(name.c_str()); }
+    void setModelName(const String& name)
+    {
+        setModelName(name.c_str());
+    }
     void setModelName(const char *name);
-    void setModelNumber(const String& num) { setModelNumber(num.c_str()); }
+    void setModelNumber(const String& num)
+    {
+        setModelNumber(num.c_str());
+    }
     void setModelNumber(const char *num);
-    void setModelURL(const String& url) { setModelURL(url.c_str()); }
-    void setModelDescription(const String& desc) { setModelDescription(desc.c_str()); }
+    void setModelURL(const String& url)
+    {
+        setModelURL(url.c_str());
+    }
+    void setModelDescription(const String& desc)
+    {
+        setModelDescription(desc.c_str());
+    }
     void setModelDescription(const char *desc);
-    void setServerName(const String& name) { setServerName(name.c_str()); }
+    void setServerName(const String& name)
+    {
+        setServerName(name.c_str());
+    }
     void setServerName(const char *name);
     void setModelURL(const char *url);
-    void setManufacturer(const String& name) { setManufacturer(name.c_str()); }
+    void setManufacturer(const String& name)
+    {
+        setManufacturer(name.c_str());
+    }
     void setManufacturer(const char *name);
-    void setManufacturerURL(const String& url) { setManufacturerURL(url.c_str()); }
+    void setManufacturerURL(const String& url)
+    {
+        setManufacturerURL(url.c_str());
+    }
     void setManufacturerURL(const char *url);
     void setHTTPPort(uint16_t port);
     void setTTL(uint8_t ttl);
     void setInterval(uint32_t interval);
     void setUUID(const char * uuid, bool rootonly = true);
-    void setServices(const char * services){_services = services;}
-    void setIcons(const char * icons){_icons = icons;}
+    void setServices(const char * services)
+    {
+        _services = services;
+    }
+    void setIcons(const char * icons)
+    {
+        _icons = icons;
+    }
 
-  protected:
+protected:
     void _send(ssdp_method_t method);
     void _update();
     void _startTimer();
     void _stopTimer();
     static void _onTimerStatic(SSDPClass* self);
     IPAddress localIP();
-     WiFiUDP *_server;
-     SSDPTimer* _timer;
+    WiFiUDP *_server;
+    SSDPTimer* _timer;
     uint16_t _port;
     uint8_t _ttl;
     uint8_t _interval;
