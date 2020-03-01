@@ -13,6 +13,7 @@ cache:
   pip: true
   directories:
   - "~/.platformio"
+  - $HOME/astyle
   
 install:
   - pip install -U platformio
@@ -32,9 +33,19 @@ before_script:
   - python get.py
   - cd $TRAVIS_BUILD_DIR
   - cp -r $TRAVIS_BUILD_DIR $HOME/arduino_ide/libraries/
+  - sh test/install_astyle.sh
     
 script:
   - cd $TRAVIS_BUILD_DIR
+  - export ARTISTIC_STYLE_OPTIONS=".astylerc" && astyle --recursive *.h *.cpp *.ino > astyle.out
+  - TEST=$(cat astyle.out | wc -l)
+  - |
+      if [[ $TEST -ne 0 ]]; then
+        cat astyle.out
+        git --no-pager diff
+        echo "Please fix style issues as shown above"
+        exit 1
+      fi
   - source command.sh
   - export PATH="$HOME/arduino_ide:$PATH"
   - rm -f $HOME/.arduino15/preferences.txt
