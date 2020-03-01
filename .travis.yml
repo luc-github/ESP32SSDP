@@ -37,8 +37,8 @@ before_script:
     
 script:
   - cd $TRAVIS_BUILD_DIR
-  - export ARTISTIC_STYLE_OPTIONS=.astylerc
-  - astyle --recursive *.h *.cpp *.ino > astyle.out
+  - export ARTISTIC_STYLE_OPTIONS=".astylerc"
+  - astyle --recursive "*.h" "*.cpp" "*.ino" > astyle.out
   - TEST=$(cat astyle.out | wc -l)
   - |
       if [[ $TEST -ne 0 ]]; then
