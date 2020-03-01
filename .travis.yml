@@ -38,9 +38,7 @@ before_script:
 script:
   - cd $TRAVIS_BUILD_DIR
   - export ARTISTIC_STYLE_OPTIONS=".astylerc"
-  - astyle -Q ESP32SSDP.cpp > astyle.out
-  - astyle -Q ESP32SSDP.h >> astyle.out
-  - astyle -Q examples/SSDP/SSDP.ino >> astyle.out
+  - astyle -Q `find . -name *.cpp -o -name *.ino -o -name *.h` > astyle.out
   - TEST=$(cat astyle.out | wc -l)
   - |
       if [[ $TEST -ne 0 ]]; then
