@@ -87,8 +87,8 @@ static const char _ssdp_schema_template[] PROGMEM =
     "<manufacturerURL>%s</manufacturerURL>"
     "<UDN>uuid:%s</UDN>"
     "<serviceList>%s</serviceList>"
-    "</device>"
     "<iconList>%s</iconList>"
+    "</device>"
     "</root>\r\n"
     "\r\n";
 
