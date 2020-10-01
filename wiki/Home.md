@@ -1,6 +1,6 @@
 Welcome to the ESP32SSDP wiki!
 
-![](https://github.com/luc-github/ESPSSDP/blob/master/wiki/images/sample.png)
+![](https://github.com/luc-github/ESP32SSDP/blob/master/wiki/images/sample.png)
 
 # Releases
 https://github.com/luc-github/ESP32SSDP/releases
