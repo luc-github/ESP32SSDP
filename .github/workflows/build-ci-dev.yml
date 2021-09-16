@@ -1,4 +1,4 @@
-name: build-ci
+name: build-ci-dev
 
 on:
   pull_request:
