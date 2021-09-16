@@ -319,7 +319,17 @@ void SSDPClass::_update()
 
     if(!_pending && _server) {
         ssdp_method_t method = NONE;
-        nbBytes= _server->parsePacket();
+        try {
+            nbBytes= _server->parsePacket();
+        } catch (const std::bad_alloc&) {
+#ifdef DEBUG_SSDP
+            DEBUG_SSDP.println("not enough memory for the packet");
+#endif
+            return;
+        }
+        if (nbBytes==0) {
+            return;
+        }
         typedef enum {METHOD, URI, PROTO, KEY, VALUE, ABORT} states;
         states state = METHOD;
         typedef enum {STRIP, START, SKIP, MAN, ST, MX} headers;
