@@ -61,7 +61,7 @@ void setup()
         SSDP.setManufacturerURL("http://www.philips.com");
         //set device type
         //"urn:schemas-upnp-org:device:Basic:1" if not set
-        SSDP.setDeviceType("upnp:rootdevice"); //to appear as root device
+        SSDP.setDeviceType("rootdevice"); //to appear as root device, other examples: MediaRenderer, MediaServer ...
         //set server name
         //"Arduino/1.0" if not set
         SSDP.setServerName("SSDPServer/1.0");
