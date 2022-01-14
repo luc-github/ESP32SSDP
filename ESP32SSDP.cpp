@@ -117,7 +117,7 @@ SSDPClass::SSDPClass() :
     _usn_suffix[0] = '\0';
     _respondType[0] = '\0';
     _modelNumber[0] = '\0';
-    sprintf(_deviceType, "urn:schemas-upnp-org:device:Basic:1");
+    sprintf(_deviceType, "Basic");
     _friendlyName[0] = '\0';
     _presentationURL[0] = '\0';
     _serialNumber[0] = '\0';
@@ -261,7 +261,7 @@ void SSDPClass::_send(ssdp_method_t method)
     _server->endPacket();
 }
 
-const char * SSDPClass::schema(bool includeheader = true)
+const char * SSDPClass::schema(bool includeheader)
 {
     uint len = strlen(_ssdp_schema_template)
                + 21 //(IP = 15) + 1 (:) + 5 (port)
