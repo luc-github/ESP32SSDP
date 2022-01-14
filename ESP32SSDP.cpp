@@ -61,12 +61,14 @@ static const char _ssdp_packet_template[] PROGMEM =
     "LOCATION: http://%u.%u.%u.%u:%u/%s\r\n" // WiFi.localIP(), _port, _schemaURL
     "\r\n";
 
-static const char _ssdp_schema_template[] PROGMEM =
+static const char _ssdp_schema_header[] PROGMEM = 
     "HTTP/1.1 200 OK\r\n"
     "Content-Type: text/xml\r\n"
     "Connection: close\r\n"
     "Access-Control-Allow-Origin: *\r\n"
-    "\r\n"
+    "\r\n";
+
+static const char _ssdp_schema_template[] PROGMEM =
     "<?xml version=\"1.0\"?>"
     "<root xmlns=\"urn:schemas-upnp-org:device-1-0\">"
     "<specVersion>"
@@ -75,7 +77,7 @@ static const char _ssdp_schema_template[] PROGMEM =
     "</specVersion>"
     "<URLBase>http://%u.%u.%u.%u:%u/</URLBase>" // WiFi.localIP(), _port
     "<device>"
-    "<deviceType>%s</deviceType>"
+    "<deviceType>urn:schemas-upnp-org:device:%s:1</deviceType>"
     "<friendlyName>%s</friendlyName>"
     "<presentationURL>%s</presentationURL>"
     "<serialNumber>%s</serialNumber>"
@@ -115,7 +117,7 @@ SSDPClass::SSDPClass() :
     _usn_suffix[0] = '\0';
     _respondType[0] = '\0';
     _modelNumber[0] = '\0';
-    sprintf(_deviceType, "urn:schemas-upnp-org:device:Basic:1");
+    sprintf(_deviceType, "Basic");
     _friendlyName[0] = '\0';
     _presentationURL[0] = '\0';
     _serialNumber[0] = '\0';
@@ -259,7 +261,7 @@ void SSDPClass::_send(ssdp_method_t method)
     _server->endPacket();
 }
 
-const char * SSDPClass::schema()
+const char * SSDPClass::schema(bool includeheader)
 {
     uint len = strlen(_ssdp_schema_template)
                + 21 //(IP = 15) + 1 (:) + 5 (port)
@@ -276,6 +278,9 @@ const char * SSDPClass::schema()
                + SSDP_UUID_SIZE
                + _services.length()
                + _icons.length();
+    if(includeheader)
+       len += strlen(_ssdp_schema_header);
+
     if (_schema) {
         free (_schema);
         _schema = nullptr;
@@ -283,6 +288,8 @@ const char * SSDPClass::schema()
     _schema = (char *)malloc(len+1);
     if (_schema) {
         IPAddress ip = localIP();
+        if(includeheader)
+            sprintf(_schema, _ssdp_schema_header);
         sprintf(_schema, _ssdp_schema_template,
                 ip[0], ip[1], ip[2], ip[3], _port,
                 _deviceType,

@@ -74,7 +74,7 @@ public:
     void end();
 
     void schema(WiFiClient client);
-    const char * schema();
+    const char * schema(bool includeheader = true);
 
     void setDeviceType(const String& deviceType)
     {

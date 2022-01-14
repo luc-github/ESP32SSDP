@@ -1,11 +1,10 @@
-#include <WiFi.h>
-#include <WebServer.h>
-#include <ESP32SSDP.h>
+#include "ESPAsyncWebServer.h"
+#include "ESP32SSDP.h"
 
 const char* ssid = "********";
 const char* password = "********";
 
-WebServer HTTP(80);
+AsyncWebServer webserver(80);
 
 void setup()
 {
@@ -18,13 +17,13 @@ void setup()
     if(WiFi.waitForConnectResult() == WL_CONNECTED) {
 
         Serial.printf("Starting HTTP...\n");
-        HTTP.on("/index.html", HTTP_GET, []() {
-            HTTP.send(200, "text/plain", "Hello World!");
+        webserver.on("/index.html", HTTP_GET, [&](AsyncWebServerRequest *request) {
+            request->send(200, "text/plain", "Hello World!");
         });
-        HTTP.on("/description.xml", HTTP_GET, []() {
-            SSDP.schema(HTTP.client());
+        webserver.on("/description.xml", HTTP_GET, [&](AsyncWebServerRequest *request) {
+            request->send(200, "text/xml", SSDP.schema(false));
         });
-        HTTP.begin();
+        webserver.begin();
 
         //set schema xml url, nees to match http handler
         //"ssdp/schema.xml" if not set
@@ -100,6 +99,5 @@ void setup()
 
 void loop()
 {
-    HTTP.handleClient();
     delay(1);
 }
