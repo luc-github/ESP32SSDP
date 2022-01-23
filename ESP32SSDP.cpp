@@ -314,16 +314,17 @@ void SSDPClass::schema(WiFiClient client, bool sendHeaders)
     client.print(getSchema());
 }
 
+/*This function is now deprecated and will be removed in future release*/
+/*Please use getSchema() instead                                       */
+const char * SSDPClass::schema(bool includeheader){
+	return getSchema();
+}
+
 void SSDPClass::_onPacket(AsyncUDPPacket& packet)
 {
     if (packet.length()== 0) {
         return;
     }
-
-    DEBUG_SSDP.printf("Got packet of %d bytes\n", packet.length());
-    DEBUG_SSDP.write(packet.data(), packet.length());
-    DEBUG_SSDP.println();
-
     int nbBytes  =0;
     char * packetBuffer = nullptr;
 
