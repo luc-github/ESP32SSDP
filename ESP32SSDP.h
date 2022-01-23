@@ -31,7 +31,7 @@ License (MIT license):
 
 #include <Arduino.h>
 #include <WiFi.h>
-#include <WiFiUdp.h>
+#include <AsyncUDP.h>
 
 #define SSDP_UUID_SIZE              37
 #define SSDP_SCHEMA_URL_SIZE        64
@@ -73,8 +73,8 @@ public:
     bool begin();
     void end();
 
-    void schema(WiFiClient client);
-    const char * schema(bool includeheader = true);
+    void schema(WiFiClient client, bool sendHeaders = true) __attribute__((deprecated));
+    const char * getSchema();
 
     void setDeviceType(const String& deviceType)
     {
@@ -151,18 +151,14 @@ public:
     }
 
 protected:
+
+    void _onPacket(AsyncUDPPacket& packet);
     void _send(ssdp_method_t method);
-    void _update();
-    void _startTimer();
-    void _stopTimer();
-    static void _onTimerStatic(SSDPClass* self);
     IPAddress localIP();
-    WiFiUDP *_server;
-    SSDPTimer* _timer;
     uint16_t _port;
     uint32_t _ttl;
     uint32_t _interval;
-
+    AsyncUDP _udp;
     ssdp_reply_slot_item_t *_replySlots[SSDP_MAX_REPLY_SLOTS];
     IPAddress _respondToAddr;
     uint16_t  _respondToPort;
