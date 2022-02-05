@@ -95,10 +95,6 @@ static const char _ssdp_schema_template[] PROGMEM =
     "</root>\r\n"
     "\r\n";
 
-struct SSDPTimer {
-    ETSTimer timer;
-};
-
 SSDPClass::SSDPClass() :
     _replySlots{NULL},
     _respondToAddr{0,0,0,0}
@@ -316,8 +312,9 @@ void SSDPClass::schema(WiFiClient client, bool sendHeaders)
 
 /*This function is now deprecated and will be removed in future release*/
 /*Please use getSchema() instead                                       */
-const char * SSDPClass::schema(bool includeheader){
-	return getSchema();
+const char * SSDPClass::schema(bool includeheader)
+{
+    return getSchema();
 }
 
 void SSDPClass::_onPacket(AsyncUDPPacket& packet)

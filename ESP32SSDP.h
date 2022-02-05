@@ -62,8 +62,6 @@ typedef struct {
     char _usn_suffix[SSDP_DEVICE_TYPE_SIZE];
 } ssdp_reply_slot_item_t;
 
-struct SSDPTimer;
-
 class SSDPClass
 {
 public:
