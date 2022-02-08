@@ -28,7 +28,7 @@ License (MIT license):
 #ifdef ARDUINO_ARCH_ESP32
 #include <functional>
 #include "ESP32SSDP.h"
-#include "AsyncUdp.h"
+#include <AsyncUDP.h>
 #include <lwip/ip_addr.h>
 
 //#define DEBUG_SSDP  Serial
