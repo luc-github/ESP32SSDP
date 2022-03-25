@@ -28,10 +28,22 @@ License (MIT license):
 #ifdef ARDUINO_ARCH_ESP32
 #include <functional>
 #include "ESP32SSDP.h"
-#include "WiFiUdp.h"
+#include <AsyncUDP.h>
 #include <lwip/ip_addr.h>
 
 //#define DEBUG_SSDP  Serial
+//#define DEBUG_VERBOSE_SSDP
+//#define DEBUG_WITH_MARLIN
+#if defined (DEBUG_WITH_MARLIN)
+class FlushableHardwareSerial : public HardwareSerial
+{
+public:
+    FlushableHardwareSerial(int uart_nr) : HardwareSerial(uart_nr) {}
+};
+extern FlushableHardwareSerial flushableSerial;
+#define DEBUG_SSDP flushableSerial
+#endif //endif DEBUG_WITH_MARLIN
+
 
 #define SSDP_INTERVAL     1200
 #define SSDP_PORT         1900
@@ -61,12 +73,15 @@ static const char _ssdp_packet_template[] PROGMEM =
     "LOCATION: http://%u.%u.%u.%u:%u/%s\r\n" // WiFi.localIP(), _port, _schemaURL
     "\r\n";
 
-static const char _ssdp_schema_template[] PROGMEM =
+/*This need to be removed as part as deprecated, headers should be handled outside of library*/
+static const char _ssdp_schema_header[] PROGMEM =
     "HTTP/1.1 200 OK\r\n"
     "Content-Type: text/xml\r\n"
     "Connection: close\r\n"
     "Access-Control-Allow-Origin: *\r\n"
-    "\r\n"
+    "\r\n";
+
+static const char _ssdp_schema_template[] PROGMEM =
     "<?xml version=\"1.0\"?>"
     "<root xmlns=\"urn:schemas-upnp-org:device-1-0\">"
     "<specVersion>"
@@ -75,7 +90,7 @@ static const char _ssdp_schema_template[] PROGMEM =
     "</specVersion>"
     "<URLBase>http://%u.%u.%u.%u:%u/</URLBase>" // WiFi.localIP(), _port
     "<device>"
-    "<deviceType>%s</deviceType>"
+    "<deviceType>urn:schemas-upnp-org:device:%s:1</deviceType>"
     "<friendlyName>%s</friendlyName>"
     "<presentationURL>%s</presentationURL>"
     "<serialNumber>%s</serialNumber>"
@@ -92,16 +107,10 @@ static const char _ssdp_schema_template[] PROGMEM =
     "</root>\r\n"
     "\r\n";
 
-struct SSDPTimer {
-    ETSTimer timer;
-};
-
 SSDPClass::SSDPClass() :
     _replySlots{NULL},
     _respondToAddr{0,0,0,0}
 {
-    _server = nullptr;
-    _timer = nullptr;
     _port = 80;
     _ttl = SSDP_MULTICAST_TTL;
     _interval = SSDP_INTERVAL;
@@ -115,7 +124,7 @@ SSDPClass::SSDPClass() :
     _usn_suffix[0] = '\0';
     _respondType[0] = '\0';
     _modelNumber[0] = '\0';
-    sprintf(_deviceType, "urn:schemas-upnp-org:device:Basic:1");
+    sprintf(_deviceType, "Basic");
     _friendlyName[0] = '\0';
     _presentationURL[0] = '\0';
     _serialNumber[0] = '\0';
@@ -139,17 +148,9 @@ void SSDPClass::end()
         free(_schema);
         _schema = nullptr;
     }
-    if(!_server) {
-        return;
-    }
-#ifdef DEBUG_SSDP
+#if defined( DEBUG_SSDP) && defined (DEBUG_VERBOSE_SSDP)
     DEBUG_SSDP.printf_P(PSTR("SSDP end ... "));
 #endif
-    // undo all initializations done in begin(), in reverse order
-    _stopTimer();
-    _server->stop();
-    delete (_server);
-    _server = 0;
 }
 
 IPAddress SSDPClass::localIP()
@@ -190,19 +191,26 @@ bool SSDPClass::begin()
     if (strlen(_uuid) == 0) {
         setUUID(SSDP_UUID_ROOT);
     }
-#ifdef DEBUG_SSDP
+#if defined (DEBUG_SSDP) && defined(DEBUG_VERBOSE_SSDP)
     DEBUG_SSDP.printf("SSDP UUID: %s\n", (char *)_uuid);
 #endif
-    assert(nullptr == _server);
-    _server = new WiFiUDP;
-    if (!(_server->beginMulticast(IPAddress(SSDP_MULTICAST_ADDR), SSDP_PORT))) {
+    if(_udp.connected()) {
+#ifdef DEBUG_SSDP
+        DEBUG_SSDP.println("Already connected, abort begin");
+#endif
+        return false;
+    }
+
+    _udp.onPacket([](void * arg, AsyncUDPPacket& packet) {
+        ((SSDPClass*)(arg))->_onPacket(packet);
+    }, this);
+
+    if (!_udp.listenMulticast(IPAddress(SSDP_MULTICAST_ADDR),SSDP_PORT)) {
 #ifdef DEBUG_SSDP
         DEBUG_SSDP.println("Error begin");
 #endif
         return false;
     }
-
-    _startTimer();
 
     return true;
 }
@@ -212,10 +220,16 @@ void SSDPClass::_send(ssdp_method_t method)
     char buffer[1460];
     IPAddress ip = localIP();
 
-    char valueBuffer[strlen_P(_ssdp_notify_template)+1];
+    char * valueBuffer = (char *)malloc(strlen_P(_ssdp_notify_template)+1);
+    if (!valueBuffer) {
+#ifdef DEBUG_SSDP
+        DEBUG_SSDP.println("Error not enough memory for valueBuffer creation");
+#endif
+        return;
+    }
     strcpy_P(valueBuffer, (method == NONE)?_ssdp_response_template:_ssdp_notify_template);
 
-    int len = snprintf_P(buffer, sizeof(buffer),
+    int len = snprintf_P(buffer, sizeof(buffer)-1,
                          _ssdp_packet_template,
                          valueBuffer,
                          _interval,
@@ -226,7 +240,11 @@ void SSDPClass::_send(ssdp_method_t method)
                          _respondType,
                          ip[0], ip[1], ip[2], ip[3], _port, _schemaURL
                         );
-    if(len < 0) {
+    if(len <= 0) {
+        free(valueBuffer);
+#ifdef DEBUG_SSDP
+        DEBUG_SSDP.println("Error not enough memory for using valueBuffer");
+#endif
         return;
     }
     IPAddress remoteAddr;
@@ -249,17 +267,16 @@ void SSDPClass::_send(ssdp_method_t method)
     DEBUG_SSDP.print(":");
     DEBUG_SSDP.println(remotePort);
 #endif
-    _server->beginPacket(remoteAddr, remotePort);
-    _server->println(buffer);
-#ifdef DEBUG_SSDP
+    _udp.writeTo((const uint8_t *)buffer, len, remoteAddr, remotePort);
+#if defined (DEBUG_SSDP) && defined(DEBUG_VERBOSE_SSDP)
     DEBUG_SSDP.println("*************************TX*************************");
     DEBUG_SSDP.println(buffer);
     DEBUG_SSDP.println("****************************************************");
 #endif
-    _server->endPacket();
+    free(valueBuffer);
 }
 
-const char * SSDPClass::schema()
+const char * SSDPClass::getSchema()
 {
     uint len = strlen(_ssdp_schema_template)
                + 21 //(IP = 15) + 1 (:) + 5 (port)
@@ -306,20 +323,35 @@ const char * SSDPClass::schema()
     }
     return _schema;
 }
-
-void SSDPClass::schema(WiFiClient client)
+/*This function is now deprecated and will be removed in future release*/
+/*Please use getSchema() instead                                       */
+void SSDPClass::schema(WiFiClient client, bool sendHeaders)
 {
-    client.print(schema());
+    if(sendHeaders) {
+        client.print(_ssdp_schema_header);
+    }
+    client.print(getSchema());
 }
 
-void SSDPClass::_update()
+/*This function is now deprecated and will be removed in future release*/
+/*Please use getSchema() instead                                       */
+const char * SSDPClass::schema(bool includeheader)
 {
+    return getSchema();
+}
+
+void SSDPClass::_onPacket(AsyncUDPPacket& packet)
+{
+    if (packet.length()== 0) {
+        return;
+    }
     int nbBytes  =0;
     char * packetBuffer = nullptr;
 
-    if(!_pending && _server) {
+    if(!_pending ) {
         ssdp_method_t method = NONE;
-        nbBytes= _server->parsePacket();
+        nbBytes= packet.length();
+
         typedef enum {METHOD, URI, PROTO, KEY, VALUE, ABORT} states;
         states state = METHOD;
         typedef enum {STRIP, START, SKIP, MAN, ST, MX} headers;
@@ -330,22 +362,29 @@ void SSDPClass::_update()
 
         char buffer[SSDP_BUFFER_SIZE] = {0};
         packetBuffer = new char[nbBytes +1];
-        int message_size=_server->read(packetBuffer,nbBytes);
-        int process_pos = 0;
-        packetBuffer[message_size]='\0';
-        _respondToAddr = _server->remoteIP();
-        _respondToPort = _server->remotePort();
+        if (packetBuffer == nullptr) {
 #ifdef DEBUG_SSDP
-        if (message_size) {
+            DEBUG_SSDP.println("not enough memory for the packet");
+#endif
+            return;
+        }
+        int process_pos = 0;
+        strncpy(packetBuffer,(const char*)packet.data(),nbBytes);
+        packetBuffer[nbBytes]='\0';
+        _respondToAddr = packet.remoteIP();
+        _respondToPort = packet.remotePort();
+
+#if defined( DEBUG_SSDP) && defined (DEBUG_VERBOSE_SSDP)
+        if (nbBytes) {
             DEBUG_SSDP.println("*************************RX*************************");
-            DEBUG_SSDP.print(_server->remoteIP());
+            DEBUG_SSDP.print(packet.remoteIP());
             DEBUG_SSDP.print(":");
-            DEBUG_SSDP.println(_server->remotePort());
+            DEBUG_SSDP.println(packet.remotePort());
             DEBUG_SSDP.println(packetBuffer);
             DEBUG_SSDP.println("****************************************************");
         }
 #endif
-        while(process_pos < message_size) {
+        while(process_pos < nbBytes) {
 
             char c = packetBuffer[process_pos];
             process_pos++;
@@ -407,6 +446,9 @@ void SSDPClass::_update()
                 if(cr == 2) {
                     switch(header) {
                     case START:
+#ifdef DEBUG_SSDP
+                        DEBUG_SSDP.println("***********************");
+#endif
                     case STRIP:
                     case SKIP:
                         break;
@@ -446,6 +488,8 @@ void SSDPClass::_update()
                                 state = ABORT;
 #ifdef DEBUG_SSDP
                                 DEBUG_SSDP.println("REJECT. The search type does not match our type");
+                                DEBUG_SSDP.println("***********************");
+
 #endif
                             }
                         break;
@@ -513,7 +557,7 @@ void SSDPClass::_update()
                     _delay = _replySlots[i]->_delay;
                     _process_time = _replySlots[i]->_process_time;
 #ifdef DEBUG_SSDP
-                    DEBUG_SSDP.printf("Remove dupe SSDP reply in slot %i.\n", i);
+                    DEBUG_SSDP.printf("Remove duplicate SSDP reply in slot %i.\n", i);
 #endif
                     delete _replySlots[i];
                     _replySlots[i] = 0;
@@ -525,14 +569,18 @@ void SSDPClass::_update()
             if (!_replySlots[i]) {
 #ifdef DEBUG_SSDP
                 DEBUG_SSDP.printf("Saving deferred SSDP reply to queue slot %i.\n", i);
+                DEBUG_SSDP.println("***********************");
+
 #endif
                 _replySlots[i] = new ssdp_reply_slot_item_t;
-                _replySlots[i]->_process_time = _process_time;
-                _replySlots[i]->_delay = _delay;
-                _replySlots[i]->_respondToAddr = _respondToAddr;
-                _replySlots[i]->_respondToPort = _respondToPort;
-                strlcpy(_replySlots[i]->_respondType, _respondType, sizeof(_replySlots[i]->_respondType));
-                strlcpy(_replySlots[i]->_usn_suffix, _usn_suffix, sizeof(_replySlots[i]->_usn_suffix));
+                if (_replySlots[i]) {
+                    _replySlots[i]->_process_time = _process_time;
+                    _replySlots[i]->_delay = _delay;
+                    _replySlots[i]->_respondToAddr = _respondToAddr;
+                    _replySlots[i]->_respondToPort = _respondToPort;
+                    strlcpy(_replySlots[i]->_respondType, _respondType, sizeof(_replySlots[i]->_respondType));
+                    strlcpy(_replySlots[i]->_usn_suffix, _usn_suffix, sizeof(_replySlots[i]->_usn_suffix));
+                }
                 break;
             }
         }
@@ -557,16 +605,20 @@ void SSDPClass::_update()
                 strlcpy(_respondType, _replySlots[i]->_respondType, sizeof(_respondType));
                 strlcpy(_usn_suffix, _replySlots[i]->_usn_suffix, sizeof(_usn_suffix));
 #ifdef DEBUG_SSDP
+                DEBUG_SSDP.printf("Slot(%d) ", i);
                 DEBUG_SSDP.println("Send None");
 #endif
                 _send(NONE);
                 sent = true;
                 delete _replySlots[i];
                 _replySlots[i] = 0;
+#ifdef DEBUG_SSDP
+                DEBUG_SSDP.println("***********************");
+#endif
             }
         }
     }
-#ifdef DEBUG_SSDP
+#if defined (DEBUG_SSDP) && defined(DEBUG_VERBOSE_SSDP)
     uint8_t rcount = 0;
     DEBUG_SSDP.print("SSDP reply queue status: [");
     for (int i = 0; i < SSDP_MAX_REPLY_SLOTS; i++) {
@@ -584,13 +636,14 @@ void SSDPClass::_update()
 #endif
         _send(NOTIFY);
         sent = true;
+#ifdef DEBUG_SSDP
+        DEBUG_SSDP.println("***********************");
+#endif
     }
     if (!sent) {
-#ifdef DEBUG_SSDP
+#if defined (DEBUG_SSDP) && defined(DEBUG_VERBOSE_SSDP)
         DEBUG_SSDP.println("Do not sent");
 #endif
-    } else {
-        _server->flush();
     }
 }
 
@@ -673,35 +726,6 @@ void SSDPClass::setInterval(uint32_t interval)
     _interval = interval;
 }
 
-void SSDPClass::_onTimerStatic(SSDPClass* self)
-{
-#ifdef DEBUG_SSDP
-    DEBUG_SSDP.println("Update");
-#endif
-    self->_update();
-}
-
-void SSDPClass::_startTimer()
-{
-    _stopTimer();
-    _timer= new SSDPTimer();
-    ETSTimer* tm = &(_timer->timer);
-    const int interval = 1000;
-    ets_timer_disarm(tm);
-    ets_timer_setfn(tm, reinterpret_cast<ETSTimerFunc*>(&SSDPClass::_onTimerStatic), reinterpret_cast<void*>(this));
-    ets_timer_arm(tm, interval, 1 /* repeat */);
-}
-
-void SSDPClass::_stopTimer()
-{
-    if(!_timer) {
-        return;
-    }
-    ETSTimer* tm = &(_timer->timer);
-    ets_timer_disarm(tm);
-    delete _timer;
-    _timer = nullptr;
-}
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SSDP)
 SSDPClass SSDP;
