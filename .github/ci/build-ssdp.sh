@@ -19,8 +19,8 @@ then
     arduino-builder -hardware "$ARDUINO_IDE_PATH/hardware" -tools "$ARDUINO_IDE_PATH/tools-builder" -tools "$ARDUINO_IDE_PATH/tools" -libraries "$ARDUINO_IDE_PATH/libraries" -fqbn=$fqbn -compile -logger=human -core-api-version=10810 ./examples/SSDP/SSDP.ino 
 else
     echo "PlatformIO"
-    cp -r ./ESP32SSDP.cpp ./examples/SSDP/
-    cp -r ./ESP32SSDP.h ./examples/SSDP/
+    cp -r ./src/ESP32SSDP.cpp ./examples/SSDP/
+    cp -r ./src/ESP32SSDP.h ./examples/SSDP/
     cp ./test/platformio.ini ./examples/
     cd examples
     platformio run -e esp32dev
