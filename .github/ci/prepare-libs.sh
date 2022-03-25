@@ -7,6 +7,6 @@ ls $HOME
 # Make sure we are inside the github workspace
 cd $GITHUB_WORKSPACE
 mkdir -p $HOME/arduino_ide/libraries/SSDP
-cp -R./src $HOME/arduino_ide/libraries/SSDP
+cp -R ./src $HOME/arduino_ide/libraries/SSDP
 cp ./library.properties $HOME/arduino_ide/libraries/SSDP
 
