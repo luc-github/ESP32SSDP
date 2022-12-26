@@ -205,7 +205,7 @@ bool SSDPClass::begin()
         ((SSDPClass*)(arg))->_onPacket(packet);
     }, this);
 
-    if (!_udp.listenMulticast(IPAddress(SSDP_MULTICAST_ADDR),SSDP_PORT)) {
+    if (!_udp.listenMulticast(IPAddress(SSDP_MULTICAST_ADDR),SSDP_PORT), _ttl) {
 #ifdef DEBUG_SSDP
         DEBUG_SSDP.println("Error begin");
 #endif
