@@ -6,6 +6,8 @@ found at: https://github.com/nomadnt/uSSDP
 
 [Latest development version ![Development Version](https://img.shields.io/badge/devt-yellow?style=plastic) ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/luc-github/ESP32SSDP/Dev?style=plastic)](https://github.com/luc-github/ESP32SSDP/tree/devt) [![github-ci](https://github.com/luc-github/ESP32SSDP/workflows/build-ci-dev/badge.svg)](https://github.com/luc-github/ESP32SSDP/actions/workflows/build-ci-dev.yml)
 
+The IDF component version can be found here: https://github.com/luc-github/SSDP_IDF
+
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
 "Software"), to deal in the Software without restriction, including
