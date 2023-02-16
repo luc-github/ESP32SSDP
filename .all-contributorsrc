@@ -23,6 +23,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "CriPstian",
+      "name": "Cristian Popescu",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10658360?v=4",
+      "profile": "https://github.com/CriPstian",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
