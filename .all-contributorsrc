@@ -1,0 +1,25 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "f34rdotcom",
+      "name": "Sean Mathews",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2042644?v=4",
+      "profile": "http://www.f34r.com",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "projectName": "ESP32SSDP",
+  "projectOwner": "luc-github"
+}
