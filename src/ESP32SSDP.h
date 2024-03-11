@@ -149,8 +149,12 @@ public:
         _icons = icons;
     }
 
-protected:
+    void setLocalIP(const char *ip);
+    void setLocalIP(String ip);
+    void setLocalIP(IPAddress ip);
 
+protected:
+    
     void _onPacket(AsyncUDPPacket& packet);
     void _send(ssdp_method_t method);
     IPAddress localIP();
@@ -186,6 +190,7 @@ protected:
     char * _schema;
     String _services;
     String _icons;
+    IPAddress _local_ip;
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SSDP)

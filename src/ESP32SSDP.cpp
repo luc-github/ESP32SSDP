@@ -109,7 +109,7 @@ static const char _ssdp_schema_template[] PROGMEM =
 
 SSDPClass::SSDPClass() :
     _replySlots{NULL},
-    _respondToAddr{0,0,0,0}
+                         _respondToAddr{0,0,0,0}
 {
     _port = 80;
     _ttl = SSDP_MULTICAST_TTL;
@@ -155,6 +155,11 @@ void SSDPClass::end()
 
 IPAddress SSDPClass::localIP()
 {
+    if (_local_ip != IPAddress(0, 0, 0, 0))
+    {
+        return _local_ip;
+    }
+
     tcpip_adapter_ip_info_t ip;
     if (WiFi.getMode() == WIFI_STA) {
         if (tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ip)) {
@@ -181,6 +186,21 @@ void SSDPClass::setUUID(const char *uuid, bool rootonly)
     } else {
         strlcpy(_uuid, uuid,sizeof(_uuid));
     }
+}
+
+void SSDPClass::setLocalIP(const char *ip)
+{
+    _local_ip = IPAddress().fromString(ip);
+}
+
+void SSDPClass::setLocalIP(String ip)
+{
+    _local_ip = IPAddress().fromString(ip);
+}
+
+void SSDPClass::setLocalIP(IPAddress ip)
+{
+    _local_ip = ip;
 }
 
 bool SSDPClass::begin()
@@ -402,7 +422,7 @@ void SSDPClass::_onPacket(AsyncUDPPacket& packet)
                         state = URI;
                     }
                     cursor = 0;
-
+                
                 } else if(cursor < SSDP_METHOD_SIZE - 1) {
                     buffer[cursor++] = c;
                     buffer[cursor] = '\0';
@@ -551,7 +571,7 @@ void SSDPClass::_onPacket(AsyncUDPPacket& packet)
         for (i = 0; i < SSDP_MAX_REPLY_SLOTS; i++) {
             if (_replySlots[i]) {
                 if (_replySlots[i]->_respondToPort == _respondToPort &&
-                        _replySlots[i]->_respondToAddr == _respondToAddr
+                    _replySlots[i]->_respondToAddr == _respondToAddr
                    ) {
                     // keep original delay
                     _delay = _replySlots[i]->_delay;
