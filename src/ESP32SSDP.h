@@ -33,7 +33,6 @@ License (MIT license):
 #include <AsyncUDP.h>
 #include <WiFi.h>
 
-
 #define SSDP_UUID_SIZE 37
 #define SSDP_SCHEMA_URL_SIZE 64
 #define SSDP_DEVICE_TYPE_SIZE 64
