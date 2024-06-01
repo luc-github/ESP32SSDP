@@ -18,7 +18,7 @@ void setup() {
     Serial.printf("Starting HTTP...\n");
     HTTP.on("/index.html", HTTP_GET,
             []() { HTTP.send(200, "text/plain", "Hello World!"); });
-    HTTP.on("/description.xml", HTTP_GET, []() { SSDP.schema(HTTP.client()); });
+    HTTP.on("/description.xml", HTTP_GET, []() { HTTP.send(200, "text/xml", SSDP.getSchema());});
     HTTP.begin();
 
     // set schema xml url, nees to match http handler

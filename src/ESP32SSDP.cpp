@@ -200,7 +200,7 @@ bool SSDPClass::begin() {
       },
       this);
 
-  if (!_udp.listenMulticast(IPAddress(SSDP_MULTICAST_ADDR), SSDP_PORT)) {
+  if (!_udp.listenMulticast(IPAddress(SSDP_MULTICAST_ADDR), SSDP_PORT, _ttl)) {
 #ifdef DEBUG_SSDP
     DEBUG_SSDP.println("Error begin");
 #endif
@@ -284,18 +284,6 @@ const char *SSDPClass::getSchema() {
   }
   return _schema;
 }
-/*This function is now deprecated and will be removed in future release*/
-/*Please use getSchema() instead                                       */
-void SSDPClass::schema(WiFiClient client, bool sendHeaders) {
-  if (sendHeaders) {
-    client.print(_ssdp_schema_header);
-  }
-  client.print(getSchema());
-}
-
-/*This function is now deprecated and will be removed in future release*/
-/*Please use getSchema() instead                                       */
-const char *SSDPClass::schema(bool includeheader) { return getSchema(); }
 
 void SSDPClass::_onPacket(AsyncUDPPacket &packet) {
   if (packet.length() == 0) {

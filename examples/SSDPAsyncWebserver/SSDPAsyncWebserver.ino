@@ -20,7 +20,7 @@ void setup() {
     });
     webserver.on("/description.xml", HTTP_GET,
                  [&](AsyncWebServerRequest* request) {
-                   request->send(200, "text/xml", SSDP.schema(false));
+                   request->send(200, "text/xml", SSDP.getSchema());
                  });
     webserver.begin();
 

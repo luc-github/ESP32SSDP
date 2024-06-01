@@ -64,9 +64,6 @@ class SSDPClass {
   bool begin();
   void end();
 
-  void schema(WiFiClient client, bool sendHeaders = true)
-      __attribute__((deprecated));
-  const char* schema(bool includeheader = true) __attribute__((deprecated));
   const char* getSchema();
 
   void setDeviceType(const String& deviceType) {
