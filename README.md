@@ -28,7 +28,7 @@ in all copies or substantial portions of the Software.
 > The software is provided 'as is,' without any warranty of any kind, expressed or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and non-infringement. In no event shall the authors or copyright holders be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software.
 >It is essential that you carefully read and understand this disclaimer before using this software and its components. If you do not agree with any part of this disclaimer, please refrain from using the software.
 
-> [!INFORMATION]
+> [!NOTE]
 >### Be Noted
 > This version is an update for ESP32 V3.0.0 and later which is a breaking change, so this version of the library is not compatible with the previous versions of the ESP32 core. The previous version of the library is available in the branch [V1.x](https://github.com/luc-github/ESP32SSDP/tree/V1.x).
 > The deprecated functions of 1.x version have been removed.

@@ -3,10 +3,10 @@ name: build-ci-v2
 on:
   pull_request:
     branches:
-      - master
+      - v2.x
   push:
     branches:
-      - master
+      - v2.x
 
 jobs:
   build:
