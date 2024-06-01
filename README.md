@@ -3,12 +3,12 @@ ESP32 Simple Service Discovery Copyright (c) 2015 Hristo Gochkov
 [![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 Original (Arduino) version by Filippo Sallemi, July 23, 2014. Can be
-found at: https://github.com/nomadnt/uSSDP    
+found at: https://github.com/nomadnt/uSSDP  
 
-[Latest stable release ![Release Version](https://img.shields.io/github/release/luc-github/ESP32SSDP.svg?style=plastic) ![Release Date](https://img.shields.io/github/release-date/luc-github/ESP32SSDP.svg?style=plastic)](https://github.com/luc-github/ESP32SSDP/releases/latest/) [![github-ci](https://github.com/luc-github/ESP32SSDP/workflows/build-ci/badge.svg)](https://github.com/luc-github/ESP32SSDP/actions/workflows/build-ci.yml) [![ESP32 Core  Version](https://img.shields.io/badge/ESP32-v2.0.8-yellow?style=plastic&label=ESP32)](https://github.com/espressif/arduino-esp32/releases/tag/2.0.8)
+Version 2.x  for ESP32 V3.0.0 and later.
 
+[Latest stable release ![Release Version](https://img.shields.io/github/release/luc-github/ESP32SSDP.svg?style=plastic) ![Release Date](https://img.shields.io/github/release-date/luc-github/ESP32SSDP.svg?style=plastic)](https://github.com/luc-github/ESP32SSDP/releases/latest/) [![github-ci](https://github.com/luc-github/ESP32SSDP/workflows/build-ci-v2/badge.svg)](https://github.com/luc-github/ESP32SSDP/actions/workflows/build-ci-v2.yml) [![ESP32 Core  Version](https://img.shields.io/badge/ESP32-v3.0.0-yellow?style=plastic&label=ESP32)](https://github.com/espressif/arduino-esp32/releases/tag/3.0.0)
 
-[Latest development version ![Development Version](https://img.shields.io/badge/devt-yellow?style=plastic) ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/luc-github/ESP32SSDP/Dev?style=plastic)](https://github.com/luc-github/ESP32SSDP/tree/devt) [![github-ci](https://github.com/luc-github/ESP32SSDP/workflows/build-ci-dev/badge.svg)](https://github.com/luc-github/ESP32SSDP/actions/workflows/build-ci-dev.yml)
 
 The IDF component version can be found here: https://github.com/luc-github/SSDP_IDF
 
@@ -28,7 +28,15 @@ in all copies or substantial portions of the Software.
 > The software is provided 'as is,' without any warranty of any kind, expressed or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and non-infringement. In no event shall the authors or copyright holders be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software.
 >It is essential that you carefully read and understand this disclaimer before using this software and its components. If you do not agree with any part of this disclaimer, please refrain from using the software.
 
+> [!INFORMATION]
+>### Be Noted
+> This version is an update for ESP32 V3.0.0 and later which is a breaking change, so this version of the library is not compatible with the previous versions of the ESP32 core. The previous version of the library is available in the branch [V1.x](https://github.com/luc-github/ESP32SSDP/tree/V1.x).
+> The deprecated functions of 1.x version have been removed.
+
+
 ## Contributors ✨
+
+
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 

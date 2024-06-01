@@ -1,12 +1,12 @@
-name: build-ci-dev
+name: build-ci-v2
 
 on:
   pull_request:
     branches:
-      - Dev
+      - master
   push:
     branches:
-      - Dev
+      - master
 
 jobs:
   build:
