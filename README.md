@@ -8,7 +8,7 @@ found at: https://github.com/nomadnt/uSSDP
 [Latest stable release ![Release Version](https://img.shields.io/github/release/luc-github/ESP32SSDP.svg?style=plastic) ![Release Date](https://img.shields.io/github/release-date/luc-github/ESP32SSDP.svg?style=plastic)](https://github.com/luc-github/ESP32SSDP/releases/latest/) [![github-ci](https://github.com/luc-github/ESP32SSDP/workflows/build-ci/badge.svg)](https://github.com/luc-github/ESP32SSDP/actions/workflows/build-ci.yml) [![ESP32 Core  Version](https://img.shields.io/badge/ESP32-v2.0.8-yellow?style=plastic&label=ESP32)](https://github.com/espressif/arduino-esp32/releases/tag/2.0.8)
 
 
-[Latest development version ![Development Version](https://img.shields.io/badge/devt-yellow?style=plastic) ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/luc-github/ESP32SSDP/Dev?style=plastic)](https://github.com/luc-github/ESP32SSDP/tree/devt) [![github-ci](https://github.com/luc-github/ESP32SSDP/workflows/build-ci-dev/badge.svg)](https://github.com/luc-github/ESP32SSDP/actions/workflows/build-ci-dev.yml)
+[Latest development version ![Development Version](https://img.shields.io/badge/Version-2.x-yellow?style=plastic) ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/luc-github/ESP32SSDP/v2.x?style=plastic)](https://github.com/luc-github/ESP32SSDP/tree/v2.x) [![github-ci](https://github.com/luc-github/ESP32SSDP/workflows/build-ci-v2/badge.svg)](https://github.com/luc-github/ESP32SSDP/actions/workflows/build-ci-v2.yml) [![ESP32 Core  Version](https://img.shields.io/badge/ESP32-v3.0.0-yellow?style=plastic&label=ESP32)](https://github.com/espressif/arduino-esp32/releases/tag/3.0.0)
 
 The IDF component version can be found here: https://github.com/luc-github/SSDP_IDF
 
