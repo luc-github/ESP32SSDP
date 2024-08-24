@@ -67,7 +67,11 @@ static const char _ssdp_notify_template[] PROGMEM =
 
 static const char _ssdp_packet_template[] PROGMEM =
     "%s"  // _ssdp_response_template / _ssdp_notify_template
+#if (ESP_ARDUINO_VERSION_MAJOR < 3)
     "CACHE-CONTROL: max-age=%u\r\n"  // _interval
+#else
+    "CACHE-CONTROL: max-age=%lu\r\n"  // _interval
+#endif //(ESP_ARDUINO_VERSION_MAJOR < 3)    
     "SERVER: %s UPNP/1.1 %s/%s\r\n"   // _servername, _modelName, _modelNumber
     "USN: uuid:%s%s\r\n"              // _uuid, _usn_suffix
     "%s: %s\r\n"                      // "NT" or "ST", _deviceType
