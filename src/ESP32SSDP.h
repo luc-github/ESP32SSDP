@@ -63,6 +63,7 @@ class SSDPClass {
 
   bool begin();
   void end();
+  bool started() { return _started; }
 
   const char* getSchema();
 
@@ -105,13 +106,13 @@ class SSDPClass {
   void setUUID(const char* uuid, bool rootonly = true);
   void setServices(const char* services) { _services = services; }
   void setIcons(const char* icons) { _icons = icons; }
-
+  IPAddress localIP();
  protected:
   typedef enum { NONE, SEARCH, NOTIFY } ssdp_method_t;
 
   void _onPacket(AsyncUDPPacket& packet);
   void _send(ssdp_method_t method);
-  IPAddress localIP();
+  
   uint16_t _port;
   uint32_t _ttl;
   uint32_t _interval;
@@ -122,6 +123,7 @@ class SSDPClass {
 
   bool _pending;
   bool _stmatch;
+  bool _started;
   short _delay;
   unsigned long _process_time;
   unsigned long _notify_time;

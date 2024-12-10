@@ -144,6 +144,7 @@ SSDPClass::SSDPClass() : _replySlots{NULL}, _respondToAddr{0, 0, 0, 0} {
 SSDPClass::~SSDPClass() { end(); }
 
 void SSDPClass::end() {
+  _started = false;
   if (_schema) {
     free(_schema);
     _schema = nullptr;
@@ -175,17 +176,16 @@ IPAddress SSDPClass::localIP() {
   // Arduino ESP32 3.x board version
   esp_netif_ip_info_t ip;
   if (WiFi.getMode() == WIFI_STA) {
-    if (esp_netif_get_ip_info(get_esp_interface_netif(ESP_IF_WIFI_STA), &ip)) {
+    if (esp_netif_get_ip_info(get_esp_interface_netif(ESP_IF_WIFI_STA), &ip)!=ESP_OK) {
       return IPAddress();
     }
   } else if (WiFi.getMode() == WIFI_OFF) {
-    if (esp_netif_get_ip_info(get_esp_interface_netif(ESP_IF_ETH), &ip)) {
+    if (esp_netif_get_ip_info(esp_netif_get_handle_from_ifkey("ETH_DEF"), &ip)!=ESP_OK) {
       return IPAddress();
     }
   }
 
 #endif 
-
   return IPAddress(ip.ip.addr);
 }
 
@@ -230,7 +230,7 @@ bool SSDPClass::begin() {
 #endif
     return false;
   }
-
+  _started = true;
   return true;
 }
 
