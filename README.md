@@ -1,6 +1,6 @@
 ESP32 Simple Service Discovery Copyright (c) 2015 Hristo Gochkov
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 Original (Arduino) version by Filippo Sallemi, July 23, 2014. Can be
 found at: https://github.com/nomadnt/uSSDP    
@@ -41,6 +41,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="http://www.f34r.com"><img src="https://avatars.githubusercontent.com/u/2042644?v=4?s=100" width="100px;" alt="Sean Mathews"/><br /><sub><b>Sean Mathews</b></sub></a><br /><a href="https://github.com/luc-github/ESP32SSDP/commits?author=f34rdotcom" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/B4stl3r"><img src="https://avatars.githubusercontent.com/u/73077761?v=4?s=100" width="100px;" alt="Bastler"/><br /><sub><b>Bastler</b></sub></a><br /><a href="https://github.com/luc-github/ESP32SSDP/commits?author=B4stl3r" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/CriPstian"><img src="https://avatars.githubusercontent.com/u/10658360?v=4?s=100" width="100px;" alt="Cristian Popescu"/><br /><sub><b>Cristian Popescu</b></sub></a><br /><a href="https://github.com/luc-github/ESP32SSDP/issues?q=author%3ACriPstian" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://www.mathertel.de"><img src="https://avatars.githubusercontent.com/u/1087895?v=4?s=100" width="100px;" alt="Matthias Hertel"/><br /><sub><b>Matthias Hertel</b></sub></a><br /><a href="https://github.com/luc-github/ESP32SSDP/commits?author=mathertel" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
