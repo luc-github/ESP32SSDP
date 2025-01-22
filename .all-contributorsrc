@@ -32,6 +32,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "mathertel",
+      "name": "Matthias Hertel",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1087895?v=4",
+      "profile": "http://www.mathertel.de",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -39,5 +48,6 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "projectName": "ESP32SSDP",
-  "projectOwner": "luc-github"
+  "projectOwner": "luc-github",
+  "commitType": "docs"
 }
