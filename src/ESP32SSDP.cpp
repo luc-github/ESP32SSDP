@@ -161,26 +161,28 @@ IPAddress SSDPClass::localIP() {
 
 #if (ESP_ARDUINO_VERSION_MAJOR < 3)
   // Arduino ESP32 2.x board version
-  tcpip_adapter_ip_info_t ip;
-  if (WiFi.getMode() == WIFI_STA) {
-    if (tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ip)) {
+  tcpip_adapter_ip_info_t ip { };
+  if (WiFi.getMode() == WIFI_OFF) {
+    if (tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_ETH, &ip)) {
       return IPAddress();
     }
-  } else if (WiFi.getMode() == WIFI_OFF) {
-    if (tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_ETH, &ip)) {
+  }
+  else {
+    if (tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ip)) {
       return IPAddress();
     }
   }
 
 #else
   // Arduino ESP32 3.x board version
-  esp_netif_ip_info_t ip;
-  if (WiFi.getMode() == WIFI_STA) {
-    if (esp_netif_get_ip_info(get_esp_interface_netif(ESP_IF_WIFI_STA), &ip)!=ESP_OK) {
+  esp_netif_ip_info_t ip { };
+  if (WiFi.getMode() == WIFI_OFF) {
+    if (esp_netif_get_ip_info(esp_netif_get_handle_from_ifkey("ETH_DEF"), &ip)!=ESP_OK) {
       return IPAddress();
     }
-  } else if (WiFi.getMode() == WIFI_OFF) {
-    if (esp_netif_get_ip_info(esp_netif_get_handle_from_ifkey("ETH_DEF"), &ip)!=ESP_OK) {
+  }
+  else {
+    if (esp_netif_get_ip_info(get_esp_interface_netif(ESP_IF_WIFI_STA), &ip)!=ESP_OK) {
       return IPAddress();
     }
   }
