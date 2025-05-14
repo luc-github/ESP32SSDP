@@ -33,6 +33,7 @@ in all copies or substantial portions of the Software.
 > This version is an update for ESP32 V3.0.0 and later which is a breaking change, so this version of the library is not compatible with the previous versions of the ESP32 core. The previous version of the library is available in the branch [V1.x](https://github.com/luc-github/ESP32SSDP/tree/V1.x).
 > The deprecated functions of 1.x version have been removed.
 
+The service is only active in STA mode, not AP ,neither AP_STA mode.
 
 ## Contributors ✨
 
