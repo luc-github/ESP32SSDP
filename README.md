@@ -1,4 +1,6 @@
-ESP32 Simple Service Discovery Copyright (c) 2015 Hristo Gochkov
+ESP32 Simple Service Discovery ![ESP32SSDP](https://img.shields.io/badge/dynamic/json?label=Version&query=$.version&url=https://raw.githubusercontent.com/luc-github/ESP32SSDP/refs/heads/v2.x/info.json)
+
+Copyright (c) 2015 Hristo Gochkov 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
@@ -7,7 +9,7 @@ found at: https://github.com/nomadnt/uSSDP
 
 Version 2.x  for ESP32 V3.0.0 and later.
 
-[Latest stable release ![Release Version](https://img.shields.io/github/release/luc-github/ESP32SSDP.svg?style=plastic) ![Release Date](https://img.shields.io/github/release-date/luc-github/ESP32SSDP.svg?style=plastic)](https://github.com/luc-github/ESP32SSDP/releases/latest/) [![github-ci](https://github.com/luc-github/ESP32SSDP/workflows/build-ci-v2/badge.svg)](https://github.com/luc-github/ESP32SSDP/actions/workflows/build-ci-v2.yml) [![ESP32 Core  Version](https://img.shields.io/badge/ESP32-v3.0.0-yellow?style=plastic&label=ESP32)](https://github.com/espressif/arduino-esp32/releases/tag/3.0.0)
+[![github-ci](https://github.com/luc-github/ESP32SSDP/workflows/build-ci-v2/badge.svg)](https://github.com/luc-github/ESP32SSDP/actions/workflows/build-ci-v2.yml) [![ESP32 Core  Version](https://img.shields.io/badge/ESP32-v3.0.0-yellow?style=plastic&label=ESP32)](https://github.com/espressif/arduino-esp32/releases/tag/3.0.0)
 
 
 The IDF component version can be found here: https://github.com/luc-github/SSDP_IDF
