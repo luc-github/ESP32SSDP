@@ -7,7 +7,7 @@ Copyright (c) 2015 Hristo Gochkov
 Original (Arduino) version by Filippo Sallemi, July 23, 2014. Can be
 found at: https://github.com/nomadnt/uSSDP  
 
-Version 2.x  for ESP32 V3.0.0 and later.
+Version 2.x  for ESP32 V3.0.0 to 3.0.4.
 
 [![github-ci](https://github.com/luc-github/ESP32SSDP/workflows/build-ci-v2/badge.svg)](https://github.com/luc-github/ESP32SSDP/actions/workflows/build-ci-v2.yml) [![ESP32 Core  Version](https://img.shields.io/badge/ESP32-v3.0.0-yellow?style=plastic&label=ESP32)](https://github.com/espressif/arduino-esp32/releases/tag/3.0.0)
 
@@ -32,8 +32,9 @@ in all copies or substantial portions of the Software.
 
 > [!NOTE]
 >### Be Noted
-> This version is an update for ESP32 V3.0.0 and later which is a breaking change, so this version of the library is not compatible with the previous versions of the ESP32 core. The previous version of the library is available in the branch [V1.x](https://github.com/luc-github/ESP32SSDP/tree/V1.x).
+> This version is an update for ESP32 V3.0.0 to 3.0.4 which is a breaking change, so this version of the library is not compatible with the previous versions of the ESP32 core. The previous version of the library is available in the branch [V1.x](https://github.com/luc-github/ESP32SSDP/tree/V1.x).
 > The deprecated functions of 1.x version have been removed.
+> Newest version use newest idf which also break the code, I did not had time to fllow the versions
 
 The service is only active in STA mode, not AP ,neither AP_STA mode.
 
