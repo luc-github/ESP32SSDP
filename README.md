@@ -34,7 +34,7 @@ in all copies or substantial portions of the Software.
 >### Be Noted
 > This version is an update for ESP32 V3.0.0 to 3.0.4 which is a breaking change, so this version of the library is not compatible with the previous versions of the ESP32 core. The previous version of the library is available in the branch [V1.x](https://github.com/luc-github/ESP32SSDP/tree/V1.x).
 > The deprecated functions of 1.x version have been removed.
-> Newest version use newest idf which also break the code, I did not had time to fllow the versions
+> Newest version use newest idf which also break the code, I did not had time to follow the arduino/idf updated versions
 
 The service is only active in STA mode, not AP ,neither AP_STA mode.
 
